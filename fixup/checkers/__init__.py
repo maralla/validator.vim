@@ -92,8 +92,13 @@ class SyntaxChecker(Base):
         for i, e in enumerate(errors):
             if e["valid"] == '0' or e['bufnr'] == '0':
                 continue
-            e["nr"] = i + 1
-            e["text"] = e["text"].strip()
+            e["enum"] = i + 1
+
+            suffix = ''
+            if e["nr"] != '-1':
+                suffix = " [{}{}]".format(e["type"], e["nr"])
+            e["text"] = "{}{}".format(e["text"].strip(), suffix)
+
             loclist.append(e)
         cls.format_loclist(loclist)
 

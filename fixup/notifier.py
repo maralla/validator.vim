@@ -3,8 +3,6 @@
 from __future__ import print_function
 
 import collections
-import base64
-import json
 import vim
 import uuid
 
@@ -46,33 +44,9 @@ class SignNotifier(object):
 
 
 class CursorNotifier(object):
-    def __init__(self, bugs):
-        text_map = {}
-
-        for b in bugs:
-            text_map[b["lnum"]] = b["text"]
-
-        self.text_map = text_map
-
     def refresh(self):
         vim.command("autocmd! fixup CursorMoved")
         self.echo_text()
 
     def echo_text(self):
-        text = base64.b64encode(json.dumps(self.text_map))
-
-        vim.command("""
-function! FixupRefreshCursor()
-python << EOF
-import json
-import base64
-txt_map = json.loads(base64.b64decode('{}'))
-cursor = vim.eval("line('.')")
-msg = ''
-if cursor in txt_map:
-    msg = txt_map[cursor]
-print(msg)
-EOF
-endfunction""".format(text))
-
         vim.command("autocmd fixup CursorMoved * call FixupRefreshCursor()")

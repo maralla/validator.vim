@@ -1,3 +1,5 @@
+" vim: et ts=2 sts=2 sw=2
+
 if exists("g:loaded_fixup_plugin")
     finish
 endif
@@ -57,10 +59,32 @@ import fixup.checker as checker
 
 EOF
 
+function! FixupStatusline()
+python << EOF
+msg = checker.statusline_flag()
+vim.command("let fixup_statusline = '{}'".format(msg))
+EOF
+return fixup_statusline
+endfunction
+
+
+function! FixupRefreshCursor()
+python << EOF
+txt_map = checker.Loclist.text_map()
+cursor = vim.eval("line('.')")
+
+print(txt_map.get(cursor, ''))
+EOF
+endfunction
+
+
 augroup fixup
     autocmd BufReadPost  * :python checker.update_errors()
     autocmd BufWritePost * :python checker.update_errors()
-    " autocmd BufEnter     * :python checker.update_errors()
+    autocmd BufEnter     * :python checker.update_errors()
 augroup END
+
+
+command! FixupToggle :python checker.toggle()
 
 " vim: set sw=4 sts=4 et fdm=marker:
