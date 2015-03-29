@@ -10,10 +10,19 @@ class PyFlakes(SyntaxChecker):
     __subname__ = "pyflakes"
 
     checker = "flake8"
-    errorformat = ('%E%f:%l: could not compile,%-Z%p^,'
-                   '%A%f:%l:%c: %t%n %m,'
-                   '%A%f:%l: %t%n %m,'
-                   '%-G%.%#')
+    regex = r"""
+            (.*?):
+            (?P<lnum>\d+):
+            (?P<col>\d+):
+            \s
+            (
+                (?P<error>(E11|E9)\d+)
+                |
+                (?P<warning>(W|E|F4|F84|N*|C|D|Q|F)\d+)
+            )
+            \s
+            (?P<text>.*)
+            """
 
     @classmethod
     def format_loclist(cls, loclist):

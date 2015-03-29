@@ -11,8 +11,14 @@ class Cython(SyntaxChecker):
 
     checker = "cython"
     args = "--warning-extra"
-    errorformat = ('%Wwarning: %f:%l:%c: %m,'
-                   '%E%f:%l:%c: %m')
+    regex = r"""
+            (?P<warning>warning)?
+            (.*?):
+            (?P<lnum>\d+):
+            (?P<col>\d+):
+            \s
+            (?P<text>.*)
+            """
 
     @classmethod
     def filter_file(cls, fname):

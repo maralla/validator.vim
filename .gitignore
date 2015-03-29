@@ -1,3 +1,5 @@
 *.pyc
 
+fixup.log
+
 tests/test_cython.c

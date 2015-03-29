@@ -3,27 +3,14 @@
 from __future__ import absolute_import
 
 import collections
-import contextlib
+import importlib
 import shlex
 import subprocess
 import os
 import os.path
+import re
 
-
-def safe_str(lst):
-    r = []
-    for e in lst:
-        r.append('"{}"'.format(e.replace('"', '\\"')))
-    return '[{}]'.format(','.join(r))
-
-
-@contextlib.contextmanager
-def cwd(chd):
-    old_cwd = os.getcwd()
-    try:
-        yield os.chdir(chd)
-    finally:
-        os.chdir(old_cwd)
+from fixup.utils import logging, exe_exist
 
 
 class Meta(type):
@@ -44,6 +31,8 @@ class SyntaxChecker(Base):
     checker = None
     args = ''
 
+    _regex_map = {}
+
     def __getitem__(self, ft):
         return self.registry.get(ft, {})
 
@@ -51,58 +40,54 @@ class SyntaxChecker(Base):
         return ft in self.registry
 
     @classmethod
-    def get_loclist(cls):
-        import vim
+    def contains(cls, ft):
+        return ft in cls.registry
 
-        if cls.checker is None:
-            raise Exception("No checker")
+    @classmethod
+    def get_checkers(cls, ft):
+        return cls.registry.get(ft, {})
 
-        fpath = vim.eval("expand('%:p')")
+    @classmethod
+    def parse_loclist(cls, loclist, bufnr):
+        if cls.checker not in cls._regex_map:
+            cls._regex_map[cls.checker] = re.compile(cls.regex, re.VERBOSE)
 
-        r = cls.filter_file(fpath)
-        if not r:
+        lists = []
+        for i, l in enumerate(loclist):
+            g = cls._regex_map[cls.checker].match(l)
+            if not g:
+                continue
+
+            loc = g.groupdict()
+            loc.update({
+                "enum": i + 1,
+                "bufnr": bufnr,
+                "valid": 1,
+                "type": 'W' if loc["warning"] else 'E'
+            })
+            lists.append(loc)
+        return lists
+
+    @classmethod
+    def gen_loclist(cls, fpath, bufnr):
+        if not exe_exist(cls.checker):
+            logging.warn("{} not exist".format(cls.checker))
             return []
 
         cmd_args = shlex.split(cls.cmd(os.path.basename(fpath)))
+        res = subprocess.Popen(cmd_args, cwd=os.path.dirname(fpath),
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                               close_fds=True)
+        out = res.communicate()
 
-        with cwd(os.path.dirname(fpath)):
-            res = subprocess.Popen(cmd_args, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-            out = res.communicate()
+        logging.info(out)
+        err_lines = '\n'.join(out).\
+            strip().\
+            replace('\r', '').\
+            split('\n')
 
-            err_lines = '\n'.join(out).\
-                strip().\
-                replace('\r', '').\
-                split('\n')
-
-            if cls.errorformat:
-                vim.command("let old_fmt = &errorformat")
-                vim.command("let &errorformat = '{}'".format(cls.errorformat))
-
-            vim.command("let expr_str = {}".format(safe_str(err_lines)))
-            vim.command("lgetexpr expr_str")
-            vim.command("unlet expr_str")
-            errors = vim.eval("getloclist(0)")
-
-            if cls.errorformat:
-                vim.command("let &errorformat = old_fmt")
-                vim.command("unlet old_fmt")
-
-        loclist = []
-        for i, e in enumerate(errors):
-            if e["valid"] == '0' or e['bufnr'] == '0':
-                continue
-            e["enum"] = i + 1
-
-            suffix = ''
-            if e["nr"] != '-1':
-                suffix = " [{}{}]".format(e["type"], e["nr"])
-            e["text"] = "{}{}".format(e["text"].strip(), suffix)
-
-            loclist.append(e)
-        cls.format_loclist(loclist)
-
-        return loclist
+        loclists = cls.parse_loclist(err_lines, bufnr)
+        return loclists
 
     @classmethod
     def format_loclist(cls, loclist):
@@ -115,3 +100,12 @@ class SyntaxChecker(Base):
     @classmethod
     def cmd(cls, fname):
         return "{} {} {}".format(cls.checker, cls.args, fname)
+
+
+def load_checkers(ft):
+    if not SyntaxChecker.contains(ft):
+        try:
+            importlib.import_module("fixup.checkers.{}".format(ft))
+        except ImportError:
+            return []
+    return SyntaxChecker.get_checkers(ft)

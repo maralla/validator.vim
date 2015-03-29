@@ -6,11 +6,15 @@ import collections
 import vim
 import uuid
 
+from fixup.utils import g
+
 
 class SignNotifier(object):
     sign_ids = collections.defaultdict(list)
 
-    def refresh(self, bugs):
+    def refresh(self, bugs, bufnr):
+        self.bufnr = bufnr
+
         self._remove_signs()
         self._sign_error(bugs)
 
@@ -30,23 +34,21 @@ class SignNotifier(object):
 
                 sign_id = int(uuid.uuid4().int >> 100)
 
-                vim.command("sign place {} line={} name={} buffer={}".format(
+                sign_place_fmt = "sign place {} line={} name={} buffer={}"
+                vim.command(sign_place_fmt.format(
                     sign_id, i["lnum"], sign_type, i["bufnr"]))
 
-                self.sign_ids[vim.current.buffer.number].append(sign_id)
+                self.sign_ids[self.bufnr].append(sign_id)
 
     def _remove_signs(self):
-        bfnum = vim.current.buffer.number
+        if not hasattr(self, "bufnr"):
+            return
 
-        for i in reversed(self.sign_ids.get(bfnum, [])):
+        for i in reversed(self.sign_ids.get(self.bufnr, [])):
             vim.command("sign unplace {}".format(i))
-            self.sign_ids[bfnum].remove(i)
+            self.sign_ids[self.bufnr].remove(i)
 
 
 class CursorNotifier(object):
     def refresh(self):
-        vim.command("autocmd! fixup CursorMoved")
-        self.echo_text()
-
-    def echo_text(self):
-        vim.command("autocmd fixup CursorMoved * call FixupRefreshCursor()")
+        g["refresh_cursor"] = True
