@@ -139,6 +139,7 @@ def event_loop(client, queue, job_func=None):
 
             continue
 
+        logging.info("send task {}".format(task))
         client.send(task)
         res = client.recv()
 

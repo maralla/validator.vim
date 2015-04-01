@@ -71,6 +71,8 @@ def checker_thread():
 
     try:
         event_loop(client, task_queue, job_func=job_func)
+    except Exception as e:
+        logging.exception(e)
     finally:
         client.close()
         server.terminate()
@@ -89,8 +91,6 @@ class Checker(object):
     def update_errors(self):
         g["refresh_cursor"] = False
 
-        logging.info("update_errors")
-
         with vim_lock():
             fpath = vim.eval("expand('%:p')")
 
@@ -108,6 +108,7 @@ class Checker(object):
 
         task = {"cmd": "check", "ft": ft, "fpath": fpath,
                 "bufnr": self.bufnr}
+        logging.info("task {}".format(task))
         task_queue.put(task)
 
     def toggle(self):

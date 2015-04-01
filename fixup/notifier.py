@@ -13,6 +13,9 @@ class SignNotifier(object):
     sign_ids = collections.defaultdict(list)
 
     def refresh(self, bugs, bufnr):
+        if bufnr < 0:
+            return
+
         self.bufnr = bufnr
 
         self._remove_signs()
@@ -34,8 +37,11 @@ class SignNotifier(object):
 
                 sign_id = int(uuid.uuid4().int >> 100)
 
-                sign_place_fmt = "sign place {} line={} name={} buffer={}"
-                vim.command(sign_place_fmt.format(
+                p_fmt = ('try | '
+                         'exec "sign place {} line={} name={} buffer={}" | '
+                         'catch /E158/ | '
+                         'endtry')
+                vim.command(p_fmt.format(
                     sign_id, i["lnum"], sign_type, i["bufnr"]))
 
                 self.sign_ids[self.bufnr].append(sign_id)
@@ -45,7 +51,11 @@ class SignNotifier(object):
             return
 
         for i in reversed(self.sign_ids.get(self.bufnr, [])):
-            vim.command("sign unplace {}".format(i))
+            unplace_fmt = ('try | '
+                           'exec "sign unplace {} buffer={}" | '
+                           'catch /E158/ | '
+                           'endtry')
+            vim.command(unplace_fmt.format(i, self.bufnr))
             self.sign_ids[self.bufnr].remove(i)
 
 

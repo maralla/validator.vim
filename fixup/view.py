@@ -67,7 +67,6 @@ def refresh_ui(loclists, bufnr):
     cursor_notifier.refresh()
 
     if loclists:
-        with vim_lock():
-            vim.command("silent! lrewind")
+        vim.command("silent! lrewind")
 
     return loclists
