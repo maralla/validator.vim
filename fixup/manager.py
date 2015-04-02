@@ -92,6 +92,9 @@ class Checker(object):
         g["refresh_cursor"] = False
 
         with vim_lock():
+            if len(vim.current.buffer) <= 1:
+                return
+
             fpath = vim.eval("expand('%:p')")
 
         ft = get_filetype()
