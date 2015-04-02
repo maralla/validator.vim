@@ -74,6 +74,10 @@ class SyntaxChecker(Base):
             logging.warn("{} not exist".format(cls.checker))
             return []
 
+        if not os.path.exists(fpath):
+            logging.warn("{} not exist".format(fpath))
+            return []
+
         cmd_args = shlex.split(cls.cmd(os.path.basename(fpath)))
         res = subprocess.Popen(cmd_args, cwd=os.path.dirname(fpath),
                                stdout=subprocess.PIPE, stderr=subprocess.PIPE,

@@ -76,7 +76,7 @@ endfunction
 function! fixup#refresh_cursor()
 python << EOF
 from fixup.view import Loclist
-from fixup.utils import get_cursor_line
+from fixup.vim_utils import get_cursor_line
 txt_map = Loclist.text_map()
 
 cursor = get_cursor_line()

@@ -3,10 +3,10 @@
 from __future__ import print_function
 
 import collections
-import vim
 import uuid
 
 from fixup.utils import g
+from fixup.vim_utils import place_sign, unplace_sign
 
 
 class SignNotifier(object):
@@ -37,12 +37,7 @@ class SignNotifier(object):
 
                 sign_id = int(uuid.uuid4().int >> 100)
 
-                p_fmt = ('try | '
-                         'exec "sign place {} line={} name={} buffer={}" | '
-                         'catch /E158/ | '
-                         'endtry')
-                vim.command(p_fmt.format(
-                    sign_id, i["lnum"], sign_type, i["bufnr"]))
+                place_sign(sign_id, i["lnum"], sign_type, i["bufnr"])
 
                 self.sign_ids[self.bufnr].append(sign_id)
 
@@ -51,11 +46,7 @@ class SignNotifier(object):
             return
 
         for i in reversed(self.sign_ids.get(self.bufnr, [])):
-            unplace_fmt = ('try | '
-                           'exec "sign unplace {} buffer={}" | '
-                           'catch /E158/ | '
-                           'endtry')
-            vim.command(unplace_fmt.format(i, self.bufnr))
+            unplace_sign(i, self.bufnr)
             self.sign_ids[self.bufnr].remove(i)
 
 

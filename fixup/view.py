@@ -2,10 +2,8 @@
 
 from __future__ import absolute_import
 
-import vim
-
 from .notifier import SignNotifier, CursorNotifier
-from .utils import vim_lock, get_current_bufnr
+from .vim_utils import get_current_bufnr, cursor_jump
 
 
 class Loclist(object):
@@ -15,14 +13,7 @@ class Loclist(object):
 
     @classmethod
     def set(cls, errors, bufnr):
-        with vim_lock():
-            cls.errors[bufnr] = errors
-
-    @classmethod
-    def get(cls):
-        with vim_lock():
-            bufnr = vim.current.buffer.number
-            return cls.errors.get(bufnr)
+        cls.errors[bufnr] = errors
 
     @classmethod
     def text_map(cls):
@@ -35,11 +26,10 @@ class Loclist(object):
 
     @classmethod
     def statusline_flag(cls):
-        with vim_lock():
-            bufnr = vim.current.buffer.number
-            errors = cls.errors.get(bufnr)
-            if not errors:
-                return ''
+        bufnr = get_current_bufnr()
+        errors = cls.errors.get(bufnr)
+        if not errors:
+            return ''
 
         return cls.statusline_fmt.format(line=errors[0]["lnum"],
                                          total=len(errors))
@@ -67,7 +57,6 @@ def refresh_ui(loclists, bufnr):
     cursor_notifier.refresh()
 
     if loclists:
-        line, col = int(loclists[0]["lnum"]), int(loclists[0].get("col", 1))
-        vim.command("call cursor({}, {})".format(line, col))
+        cursor_jump(int(loclists[0]["lnum"]), int(loclists[0].get("col", 1)))
 
     return loclists

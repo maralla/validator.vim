@@ -1,4 +1,3 @@
-import vim
 import os.path
 import time
 import subprocess
@@ -6,9 +5,14 @@ import subprocess
 from Queue import Queue
 from threading import Thread
 
+
 from .view import refresh_ui, Loclist, clear_notify
-from .utils import get_filetype, get_unused_port, logging, \
-    get_current_bufnr, vim_lock, g
+from .utils import get_unused_port, logging, g
+from .vim_utils import (
+    get_current_bufnr,
+    get_filetype,
+    get_fpath
+)
 from . import default_checkers
 
 from .transport import event_loop, FuClient
@@ -91,12 +95,6 @@ class Checker(object):
     def update_errors(self):
         g["refresh_cursor"] = False
 
-        with vim_lock():
-            if len(vim.current.buffer) <= 1:
-                return
-
-            fpath = vim.eval("expand('%:p')")
-
         ft = get_filetype()
         if not ft:
             return
@@ -109,7 +107,7 @@ class Checker(object):
 
         self.bufnr = get_current_bufnr()
 
-        task = {"cmd": "check", "ft": ft, "fpath": fpath,
+        task = {"cmd": "check", "ft": ft, "fpath": get_fpath(),
                 "bufnr": self.bufnr}
         logging.info("task {}".format(task))
         task_queue.put(task)

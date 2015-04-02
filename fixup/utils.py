@@ -2,8 +2,6 @@ import socket
 import os
 import os.path
 import logging
-import threading
-import contextlib
 
 log_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                         "fixup.log")
@@ -12,33 +10,6 @@ logger = logging.getLogger("requests")
 logger.propagate = False
 
 g = {}
-
-
-def get_filetype():
-    import vim
-
-    with vim_lock():
-        ft = vim.eval("&filetype")
-        if not ft:
-            vim.command("silent! filetype detect")
-            ft = vim.eval("&filetype")
-    return ft
-
-
-def get_current_bufnr():
-    import vim
-
-    with vim_lock():
-        bufnr = vim.current.buffer.number
-    return bufnr
-
-
-def get_cursor_line():
-    import vim
-
-    with vim_lock():
-        cursor = vim.eval("line('.')")
-    return cursor
 
 
 def get_unused_port():
@@ -64,15 +35,3 @@ def exe_exist(program):
             if is_exe(exe_file):
                 return True
     return False
-
-
-@contextlib.contextmanager
-def vim_lock():
-    if "vim_lock" not in g:
-        g["vim_lock"] = threading.Lock()
-
-    try:
-        g["vim_lock"].acquire()
-        yield g["vim_lock"]
-    finally:
-        g["vim_lock"].release()
