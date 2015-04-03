@@ -3,8 +3,8 @@
 default_checkers = {
     "python": ["pyflakes"],
     "cython": ["cython"],
+    "javascript": ["jshint"],
     # "vim": ["vim"],
-    # "javascript": ["jshint"],
     # "css": ["csslint"],
     # "thrift": ["thrift"],
 }

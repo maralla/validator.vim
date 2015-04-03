@@ -11,4 +11,20 @@ class Javascript(SyntaxChecker):
 
     checker = "jshint"
     args = "--verbose"
-    errorformat = "%A%f: line %l\, col %v\, %m \(%t%n\)"
+    regex = r"""
+            .+?:
+            \s
+            line\s(?P<lnum>\d+),
+            \s
+            col\s(?P<col>\d+),
+            \s
+            (?P<text>.+)
+            \s
+            \(
+                (
+                    (?P<error>E)
+                    |
+                    (?P<warning>W)
+                )
+                (?P<code>\d+)
+            \)"""
