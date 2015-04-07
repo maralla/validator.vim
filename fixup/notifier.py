@@ -5,8 +5,8 @@ from __future__ import print_function
 import collections
 import uuid
 
-from fixup.utils import g
-from fixup.vim_utils import place_sign, unplace_sign
+from .utils import g
+from .vim_utils import place_sign, unplace_sign
 
 
 class SignNotifier(object):
@@ -28,7 +28,7 @@ class SignNotifier(object):
         seen = {}
 
         for i in bugs:
-            if i['lnum'] > 0 and i["lnum"] not in seen:
+            if i["lnum"] > 0 and i["lnum"] not in seen:
                 seen[i["lnum"]] = True
 
                 sign_severity = "Warning" if i["type"] == 'W' else "Error"

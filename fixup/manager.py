@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 import os.path
 import time
 import subprocess
 
 from Queue import Queue
 from threading import Thread
-
 
 from .view import refresh_ui, Loclist, clear_notify
 from .utils import get_unused_port, logging, g
@@ -13,7 +16,6 @@ from .vim_utils import (
     get_filetype,
     get_fpath
 )
-from . import default_checkers
 
 from .transport import event_loop, FuClient
 
@@ -36,10 +38,7 @@ def job_func(res):
     checker_classes = load_checkers(ft)
 
     loclists = []
-    for c in default_checkers.get(ft, []):
-        if c not in checker_classes:
-            continue
-
+    for c in checker_classes:
         loclists.extend(reply[c])
 
     refresh_ui(loclists, res["bufnr"])
@@ -99,7 +98,7 @@ class Checker(object):
         if not ft:
             return
 
-        if ft not in default_checkers:
+        if not load_checkers(ft):
             return
 
         if not self._client_started:

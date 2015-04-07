@@ -1,3 +1,8 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+
 import argparse
 import importlib
 import os
@@ -8,7 +13,6 @@ import signal
 path = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(path)
 
-from fixup import default_checkers
 from fixup.checkers import SyntaxChecker
 from fixup.transport import ServerHandler, make_server
 from fixup.utils import logging
@@ -20,23 +24,17 @@ class FuHandler(ServerHandler):
     def check(self, req):
         ft = req["ft"]
         if ft not in checker_manager:
-            logging
             try:
                 importlib.import_module("fixup.checkers.{}".format(ft))
             except ImportError as e:
                 logging.exception(e)
-                return []
+                return {}
 
         checker_classes = checker_manager[ft]
 
         errors = {}
-        logging.info("ft {}".format(ft))
-        for c in default_checkers.get(ft, []):
-            logging.info("checker name {}".format(c))
-            if c not in checker_classes:
-                continue
-
-            errors[c] = checker_classes[c].gen_loclist(
+        for checker_name, checker in checker_classes.items():
+            errors[checker_name] = checker.gen_loclist(
                 req["fpath"], req["bufnr"])
 
         logging.info("check {}".format(errors))

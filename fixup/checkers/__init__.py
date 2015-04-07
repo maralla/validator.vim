@@ -21,7 +21,7 @@ class Meta(type):
 
         return super(Meta, cls).__init__(name, bases, attrs)
 
-Base = Meta('Base', (object,), {})
+Base = Meta("Base", (object,), {})
 
 
 class SyntaxChecker(Base):
@@ -111,5 +111,5 @@ def load_checkers(ft):
         try:
             importlib.import_module("fixup.checkers.{}".format(ft))
         except ImportError:
-            return []
+            return {}
     return SyntaxChecker.get_checkers(ft)

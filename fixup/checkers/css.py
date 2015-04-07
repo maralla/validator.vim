@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
@@ -12,8 +11,19 @@ class Css(SyntaxChecker):
 
     checker = "csslint"
     args = "--format=compact"
-    errorformat = ("%-G,"
-                   "%-G%f: lint free!,"
-                   "%f: line %l\, col %c\, %trror - %m,"
-                   "%f: line %l\, col %c\, %tarning - %m,"
-                   "%f: line %l\, col %c\, %m")
+    regex = r"""
+            .+:
+            \s
+            line\s(?P<lnum>\d+),
+            \s
+            col\s(?P<col>\d+),
+            \s
+            (
+               (?P<error>Error)
+               |
+               (?P<warning>Warning)
+            )
+            \s
+            -
+            \s
+            (?P<text>.*)"""
