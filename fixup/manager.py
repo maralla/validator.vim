@@ -54,8 +54,8 @@ def checker_thread():
             stderr=subprocess.PIPE,
             close_fds=True,
         )
-    except Exception:
-        raise
+    except Exception as e:
+        logging.exception(e)
 
     limited, i = 10, 0
     while i < limited:
@@ -78,7 +78,9 @@ def checker_thread():
         logging.exception(e)
     finally:
         client.close()
-        server.terminate()
+
+        if client.server_started:
+            server.terminate()
 
 
 class Checker(object):
