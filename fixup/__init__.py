@@ -6,5 +6,4 @@ default_checkers = {
     "javascript": ["jshint"],
     # "vim": ["vim"],
     # "css": ["csslint"],
-    # "thrift": ["thrift"],
 }
