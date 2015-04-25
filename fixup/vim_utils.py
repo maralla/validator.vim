@@ -30,9 +30,12 @@ def cursor_jump(line, col):
 
 
 def place_sign(sign_id, line, name, bufnr):
+    if line < 1:
+        line = 1
+
     p_fmt = ('try | '
              'exec "sign place {} line={} name={} buffer={}" | '
-             'catch /E158/ | '
+             'catch | '
              'endtry')
     vim.command(p_fmt.format(sign_id, line, name, bufnr))
 

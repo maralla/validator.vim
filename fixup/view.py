@@ -2,8 +2,9 @@
 
 from __future__ import absolute_import
 
-from .notifier import SignNotifier, CursorNotifier
-from .vim_utils import get_current_bufnr, cursor_jump
+from .notifier import SignNotifier
+from .vim_utils import get_current_bufnr
+from .utils import g
 
 
 class Loclist(object):
@@ -13,50 +14,68 @@ class Loclist(object):
 
     @classmethod
     def set(cls, errors, bufnr):
-        cls.errors[bufnr] = errors
+        cls.errors[bufnr] = {"lst": errors, "_refreshed": False}
+
+    @classmethod
+    def get(cls, bufnr):
+        errors = cls.errors.get(bufnr, [])
+        if errors:
+            errors = errors["lst"]
+        return errors
 
     @classmethod
     def text_map(cls):
         tmap = {}
 
         bufnr = get_current_bufnr()
-        for e in cls.errors.get(bufnr, []):
+        errors = cls.get(bufnr)
+        for e in errors:
             tmap[e["lnum"]] = e["text"]
         return tmap
 
     @classmethod
     def statusline_flag(cls):
         bufnr = get_current_bufnr()
-        errors = cls.errors.get(bufnr)
+        errors = cls.get(bufnr)
         if not errors:
             return ''
 
         return cls.statusline_fmt.format(line=errors[0]["lnum"],
                                          total=len(errors))
 
+    @classmethod
+    def _refresh_state(cls, bufnr, state=None):
+        loclist = cls.errors.get(bufnr)
+        if not loclist:
+            s = True
+        else:
+            s = loclist["_refreshed"]
+        if state is not None:
+            loclist["_refreshed"] = state
+        return s
 
-def clear_notify(bufnr):
-    Loclist.set([], bufnr)
+    @classmethod
+    def refresh(cls):
+        bufnr = get_current_bufnr()
 
-    sign_notifier = SignNotifier()
-    sign_notifier.refresh([])
+        if cls._refresh_state(bufnr):
+            return
 
-    cursor_notifier = CursorNotifier()
-    cursor_notifier.refresh()
+        loclists = cls.get(bufnr)
+        loclists = [] if cls.disabled else loclists
 
+        sign_notifier = SignNotifier()
+        sign_notifier.refresh(loclists, bufnr)
 
-def refresh_ui(loclists, bufnr):
-    loclists = [] if Loclist.disabled else loclists
+        g["refresh_cursor"] = True
 
-    Loclist.set(loclists, bufnr)
+        cls._refresh_state(bufnr, True)
 
-    sign_notifier = SignNotifier()
-    sign_notifier.refresh(loclists, bufnr)
+    @classmethod
+    def clear(cls, bufnr):
+        cls.set([], bufnr)
 
-    cursor_notifier = CursorNotifier()
-    cursor_notifier.refresh()
+        sign_notifier = SignNotifier()
+        sign_notifier.refresh([], bufnr)
 
-    if loclists:
-        cursor_jump(int(loclists[0]["lnum"]), int(loclists[0].get("col", 1)))
-
-    return loclists
+        g["refresh_cursor"] = False

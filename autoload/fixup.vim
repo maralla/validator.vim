@@ -46,9 +46,22 @@ import vim
 cwd = vim.eval("s:python_path")
 sys.path.append(os.path.dirname(cwd))
 from fixup.manager import Checker, g
+from fixup.view import Loclist
 
 checker = Checker()
 EOF
+endfunction
+
+function! fixup#intall_event_handlers()
+    augroup fixup
+        autocmd!
+        autocmd CursorMoved  * call fixup#on_cursor_move()
+        autocmd CursorHold   * call fixup#on_cursor_hold()
+        autocmd BufReadPost  * :python checker.update_errors()
+        autocmd BufWritePost * :python checker.update_errors()
+        autocmd BufEnter     * :python checker.update_errors()
+        autocmd VimLeave     * :python checker.exit()
+    augroup END
 endfunction
 
 function! fixup#enable()
@@ -59,23 +72,14 @@ function! fixup#enable()
     call s:highlight()
     call s:python_import()
 
-    augroup fixup
-        autocmd!
-        autocmd CursorMoved  * call fixup#on_cursor_move()
-        autocmd BufReadPost  * :python checker.update_errors()
-        autocmd BufWritePost * :python checker.update_errors()
-        autocmd BufEnter     * :python checker.update_errors()
-        autocmd VimLeave     * :python checker.exit()
-    augroup END
-
     command! FixupToggle :python checker.toggle()
+    call fixup#intall_event_handlers()
 
     py checker.update_errors()
 endfunction
 
 function! fixup#refresh_cursor()
 python << EOF
-from fixup.view import Loclist
 from fixup.vim_utils import get_cursor_line
 txt_map = Loclist.text_map()
 
@@ -90,6 +94,11 @@ function! fixup#on_cursor_move()
   if refresh_cursor
     call fixup#refresh_cursor()
   endif
+endfunction
+
+
+function! fixup#on_cursor_hold()
+  py Loclist.refresh()
 endfunction
 
 let &cpo = s:save_cpo

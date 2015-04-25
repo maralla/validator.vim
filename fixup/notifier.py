@@ -5,7 +5,6 @@ from __future__ import print_function
 import collections
 import uuid
 
-from .utils import g
 from .vim_utils import place_sign, unplace_sign
 
 
@@ -48,8 +47,3 @@ class SignNotifier(object):
         for i in reversed(self.sign_ids.get(self.bufnr, [])):
             unplace_sign(i, self.bufnr)
             self.sign_ids[self.bufnr].remove(i)
-
-
-class CursorNotifier(object):
-    def refresh(self):
-        g["refresh_cursor"] = True
