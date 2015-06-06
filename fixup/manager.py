@@ -2,85 +2,72 @@
 
 from __future__ import absolute_import
 
-import os.path
-import time
-import subprocess
+import importlib
 
 from Queue import Queue
 from threading import Thread
 
 from .view import Loclist
-from .utils import get_unused_port, logging, g
+from .utils import logging, g
 from .vim_utils import (
     get_current_bufnr,
     get_filetype,
     get_fpath,
 )
 
-from .transport import event_loop, FuClient
-
-from .checkers import load_checkers
+from .checkers import load_checkers, SyntaxChecker
 
 task_queue = Queue()
-worker_path = os.path.join(os.path.dirname(__file__), "worker.py")
 
 g["refresh_cursor"] = False
 
+checker_manager = SyntaxChecker()
 
-def job_func(res):
-    reply = res["reply"]
-    logging.info("job_func {}".format(reply))
 
-    ft = get_filetype()
-    if not ft:
-        return
+def check(task):
+    ft = task["ft"]
+    if ft not in checker_manager:
+        try:
+            importlib.import_module("fixup.checkers.{}".format(ft))
+        except ImportError as e:
+            logging.exception(e)
+            return {}
 
+    checker_classes = checker_manager[ft]
+
+    errors = {}
+    for checker_name, checker in checker_classes.items():
+        errors[checker_name] = checker.gen_loclist(
+            task["fpath"], task["bufnr"])
+
+    logging.info("check {}".format(errors))
+
+    return errors
+
+
+def job_func(ft, bufnr, res):
     checker_classes = load_checkers(ft)
 
     loclists = []
     for c in checker_classes:
-        loclists.extend(reply[c])
+        loclists.extend(res[c])
 
-    Loclist.set(loclists, res["bufnr"])
+    Loclist.set(loclists, bufnr)
 
 
 def checker_thread():
-    port = get_unused_port()
-
-    try:
-        server = subprocess.Popen(
-            ["python", worker_path, "--port", str(port)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            close_fds=True,
-        )
-    except Exception as e:
-        logging.exception(e)
-
-    limited, i = 10, 0
-    while i < limited:
-        client = FuClient(port)
-        try:
-            client.connect()
-            client.server_started = True
+    while True:
+        task = task_queue.get()
+        if task["cmd"] == "exit":
             break
-        except:
-            time.sleep(0.1)
-            pass
-        i += 1
 
-    if not client.server_started:
-        logging.warning("Server not started, cannot connect.")
+        ft = task["ft"]
+        bufnr = task["bufnr"]
 
-    try:
-        event_loop(client, task_queue, job_func=job_func)
-    except Exception as e:
-        logging.exception(e)
-    finally:
-        client.close()
-
-        if client.server_started:
-            server.terminate()
+        try:
+            job_func(ft, bufnr, check(task))
+        except Exception as e:
+            logging.exception(e)
 
 
 class Checker(object):

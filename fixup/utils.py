@@ -2,7 +2,6 @@
 
 from __future__ import absolute_import
 
-import socket
 import os
 import os.path
 import logging
@@ -14,14 +13,6 @@ logger = logging.getLogger("requests")
 logger.propagate = False
 
 g = {}
-
-
-def get_unused_port():
-    sock = socket.socket()
-    sock.bind(('', 0))
-    port = sock.getsockname()[1]
-    sock.close()
-    return port
 
 
 def exe_exist(program):
