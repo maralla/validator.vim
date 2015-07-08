@@ -5,6 +5,10 @@ from __future__ import absolute_import
 import vim
 
 
+def get_val(key):
+    return vim.eval("g:{}".format(key))
+
+
 def get_current_bufnr():
     return vim.current.buffer.number
 

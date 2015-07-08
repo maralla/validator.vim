@@ -6,13 +6,24 @@ import os
 import os.path
 import logging
 
+from .vim_utils import get_val
+
 log_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                         "fixup.log")
-logging.basicConfig(filename=log_file, level=logging.DEBUG)
+logging.basicConfig(filename=log_file, level=logging.INFO,
+                    format="%(asctime)s [%(levelname)s] %(message)s")
+
 logger = logging.getLogger("requests")
 logger.propagate = False
 
 g = {}
+
+
+class DebugFilter(object):
+    def filter(self, record):
+        return bool(int(get_val("fixup_debug")))
+
+logging.root.addFilter(DebugFilter())
 
 
 def exe_exist(program):

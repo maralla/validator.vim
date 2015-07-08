@@ -33,6 +33,8 @@ let g:fixup_style_error_symbol =
 let g:fixup_style_warning_symbol =
             \ get(g:, "fixup_style_warning_symbol", g:fixup_warning_symbol)
 
+let g:fixup_debug = get(g:, "fixup_debug", 0)
+
 
 function! FixupStatusline()
     py from fixup.view import Loclist
