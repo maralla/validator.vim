@@ -37,8 +37,8 @@ let g:fixup_debug = get(g:, "fixup_debug", 0)
 
 
 function! FixupStatusline()
-    py from fixup.view import Loclist
-    return pyeval('Loclist.statusline_flag()')
+    py from fixup import location_list
+    return pyeval('location_list.statusline_flag()')
 endfunction
 
 augroup fixup

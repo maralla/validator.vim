@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
-from . import SyntaxChecker
+from fixup import SyntaxChecker
 
 
 class Cython(SyntaxChecker):
     __filetype__ = "cython"
-    __subname__ = "cython"
 
     checker = "cython"
     args = "--warning-extra"

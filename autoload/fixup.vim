@@ -3,8 +3,6 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:python_path = expand('<sfile>:p:h')
-
 function! s:highlight()
     if !hlexists('FixupErrorSign')
         highlight FixupErrorSign ctermfg=88 ctermbg=235
@@ -39,15 +37,7 @@ endfunction
 
 function! s:python_import()
 python << EOF
-import sys
-import os.path
-import vim
-
-cwd = vim.eval("s:python_path")
-sys.path.append(os.path.dirname(cwd))
-from fixup.manager import Checker, g
-from fixup.view import Loclist
-
+from fixup import Checker, g, location_list
 checker = Checker()
 EOF
 endfunction
@@ -81,7 +71,7 @@ endfunction
 function! fixup#refresh_cursor()
 python << EOF
 from fixup.vim_utils import get_cursor_line
-txt_map = Loclist.text_map()
+txt_map = location_list.text_map()
 
 cursor = get_cursor_line()
 
@@ -98,7 +88,7 @@ endfunction
 
 
 function! fixup#on_cursor_hold()
-  py Loclist.refresh()
+  py location_list.refresh()
 endfunction
 
 let &cpo = s:save_cpo

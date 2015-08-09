@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
-from . import SyntaxChecker
+from fixup import SyntaxChecker
 
 
 class Javascript(SyntaxChecker):
     __filetype__ = "javascript"
-    __subname__ = "jshint"
 
     checker = "jshint"
     args = "--verbose"

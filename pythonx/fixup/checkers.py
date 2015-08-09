@@ -10,14 +10,13 @@ import os
 import os.path
 import re
 
-from fixup.utils import logging, exe_exist
+from .utils import logging, exe_exist
 
 
 class Meta(type):
     def __init__(cls, name, bases, attrs):
         if name not in ("SyntaxChecker", "Base"):
-            SyntaxChecker.registry[cls.__filetype__][
-                cls.__subname__] = cls
+            SyntaxChecker.registry[cls.__filetype__][cls.checker] = cls
 
         return super(Meta, cls).__init__(name, bases, attrs)
 
@@ -38,14 +37,6 @@ class SyntaxChecker(Base):
 
     def __contains__(self, ft):
         return ft in self.registry
-
-    @classmethod
-    def contains(cls, ft):
-        return ft in cls.registry
-
-    @classmethod
-    def get_checkers(cls, ft):
-        return cls.registry.get(ft, {})
 
     @classmethod
     def parse_loclist(cls, loclist, bufnr):
@@ -70,6 +61,9 @@ class SyntaxChecker(Base):
 
     @classmethod
     def gen_loclist(cls, fpath, bufnr):
+        if not cls.filter_file(fpath):
+            return []
+
         if not exe_exist(cls.checker):
             logging.warn("{} not exist".format(cls.checker))
             return []
@@ -84,7 +78,6 @@ class SyntaxChecker(Base):
                                close_fds=True)
         out = res.communicate()
 
-        logging.info(out)
         err_lines = '\n'.join(out).\
             strip().\
             replace('\r', '').\
@@ -94,22 +87,20 @@ class SyntaxChecker(Base):
         return loclists
 
     @classmethod
-    def format_loclist(cls, loclist):
-        pass
-
-    @classmethod
-    def filter_file(cls, fname):
+    def filter_file(cls, fpath):
         return True
 
     @classmethod
     def cmd(cls, fname):
         return "{} {} {}".format(cls.checker, cls.args, fname)
 
+checker_manager = SyntaxChecker()
+
 
 def load_checkers(ft):
-    if not SyntaxChecker.contains(ft):
+    if ft not in checker_manager:
         try:
-            importlib.import_module("fixup.checkers.{}".format(ft))
+            importlib.import_module("fixup_checkers.{}".format(ft))
         except ImportError:
             return {}
-    return SyntaxChecker.get_checkers(ft)
+    return checker_manager[ft]

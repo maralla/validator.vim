@@ -8,7 +8,7 @@ import uuid
 from .vim_utils import place_sign, unplace_sign
 
 
-class SignNotifier(object):
+class _SignNotifier(object):
     sign_ids = collections.defaultdict(list)
 
     def refresh(self, bugs, bufnr):
@@ -27,18 +27,19 @@ class SignNotifier(object):
         seen = {}
 
         for i in bugs:
-            if i["lnum"] > 0 and i["lnum"] not in seen:
-                seen[i["lnum"]] = True
+            if i["lnum"] <= 0 or i["lnum"] in seen:
+                continue
+            seen[i["lnum"]] = True
 
-                sign_severity = "Warning" if i["type"] == 'W' else "Error"
-                sign_subtype = i.get("subtype", '')
-                sign_type = "Fixup{}{}".format(sign_subtype, sign_severity)
+            sign_severity = "Warning" if i["type"] == 'W' else "Error"
+            sign_subtype = i.get("subtype", '')
+            sign_type = "Fixup{}{}".format(sign_subtype, sign_severity)
 
-                sign_id = int(uuid.uuid4().int >> 100)
+            sign_id = int(uuid.uuid4().int >> 100)
 
-                place_sign(sign_id, i["lnum"], sign_type, i["bufnr"])
+            place_sign(sign_id, i["lnum"], sign_type, i["bufnr"])
 
-                self.sign_ids[self.bufnr].append(sign_id)
+            self.sign_ids[self.bufnr].append(sign_id)
 
     def _remove_signs(self):
         if not hasattr(self, "bufnr"):
@@ -47,3 +48,5 @@ class SignNotifier(object):
         for i in reversed(self.sign_ids.get(self.bufnr, [])):
             unplace_sign(i, self.bufnr)
             self.sign_ids[self.bufnr].remove(i)
+
+sign_notifier = _SignNotifier()

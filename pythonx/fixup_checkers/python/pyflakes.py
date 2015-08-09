@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
-from .. import SyntaxChecker
+from fixup import SyntaxChecker
 
 
 class PyFlakes(SyntaxChecker):
     __filetype__ = "python"
-    __subname__ = "pyflakes"
 
     checker = "flake8"
     regex = r"""
@@ -23,8 +20,3 @@ class PyFlakes(SyntaxChecker):
             \s
             (?P<text>.*)
             """
-
-    @classmethod
-    def format_loclist(cls, loclist):
-        for e in loclist:
-            e["type"] = 'E' if e["type"] in 'EFC' else 'W'

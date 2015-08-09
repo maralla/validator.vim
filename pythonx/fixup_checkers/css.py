@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
-from . import SyntaxChecker
+from fixup import SyntaxChecker
 
 
 class Css(SyntaxChecker):
     __filetype__ = "css"
-    __subname__ = "csslint"
 
     checker = "csslint"
     args = "--format=compact"
