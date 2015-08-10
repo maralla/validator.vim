@@ -13,10 +13,6 @@ def get_current_bufnr():
     return vim.current.buffer.number
 
 
-def get_cursor_line():
-    return vim.eval("line('.')")
-
-
 def get_filetype():
     ft = vim.eval("&filetype")
     if not ft:

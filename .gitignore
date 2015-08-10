@@ -1,6 +1,6 @@
 *.pyc
 
-fixup.log
+*.log
 
 tests/test_cython.c
 .ropeproject

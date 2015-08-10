@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fixup import SyntaxChecker
+from linter import SyntaxChecker
 
 
 class Cython(SyntaxChecker):

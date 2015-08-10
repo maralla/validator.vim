@@ -100,7 +100,7 @@ checker_manager = SyntaxChecker()
 def load_checkers(ft):
     if ft not in checker_manager:
         try:
-            importlib.import_module("fixup_checkers.{}".format(ft))
+            importlib.import_module("linters.{}".format(ft))
         except ImportError:
             return {}
     return checker_manager[ft]

@@ -33,7 +33,7 @@ class _SignNotifier(object):
 
             sign_severity = "Warning" if i["type"] == 'W' else "Error"
             sign_subtype = i.get("subtype", '')
-            sign_type = "Fixup{}{}".format(sign_subtype, sign_severity)
+            sign_type = "Linter{}{}".format(sign_subtype, sign_severity)
 
             sign_id = int(uuid.uuid4().int >> 100)
 

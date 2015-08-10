@@ -13,7 +13,7 @@ from .vim_utils import (
     get_fpath,
 )
 
-from .checkers import load_checkers
+from .checker import load_checkers
 
 task_queue = Queue()
 
@@ -30,7 +30,7 @@ def check(task):
     location_list[task["bufnr"]] = loclists
 
 
-def checker_thread():
+def linter_thread():
     while True:
         task = task_queue.get()
         if task["cmd"] == "exit":
@@ -42,14 +42,14 @@ def checker_thread():
             logging.exception(e)
 
 
-class Checker(object):
+class Linter(object):
     def __init__(self):
-        self.checker = None
+        self.linter = None
 
-    def _start_checker(self):
-        self.checker = Thread(target=checker_thread)
-        self.checker.daemon = True
-        self.checker.start()
+    def _start_linter(self):
+        self.linter = Thread(target=linter_thread)
+        self.linter.daemon = True
+        self.linter.start()
 
     def update_errors(self):
         if location_list.disabled:
@@ -61,8 +61,8 @@ class Checker(object):
         if not ft or not load_checkers(ft):
             return
 
-        if not self.checker:
-            self._start_checker()
+        if not self.linter:
+            self._start_linter()
 
         self.bufnr = get_current_bufnr()
 
@@ -78,6 +78,6 @@ class Checker(object):
             self.update_errors()
 
     def exit(self):
-        if self.checker and self.checker.is_alive():
+        if self.linter and self.linter.is_alive():
             task_queue.put({"cmd": "exit"})
-            self.checker.join()
+            self.linter.join()
