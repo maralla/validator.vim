@@ -46,3 +46,7 @@ def unplace_sign(sign_id, bufnr):
                    'catch /E158/ | '
                    'endtry')
     vim.command(unplace_fmt.format(sign_id, bufnr))
+
+
+def save(filename):
+    vim.command(":w! {}".format(filename))

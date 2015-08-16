@@ -24,15 +24,10 @@ let g:loaded_linter_plugin = 1
 
 let s:linter_symbol = '●'
 
-let g:linter_error_symbol =
-            \ get(g:, "linter_error_symbol", s:linter_symbol)
-let g:linter_warning_symbol =
-            \ get(g:, "linter_warning_symbol", s:linter_symbol)
-let g:linter_style_error_symbol =
-            \ get(g:, "linter_style_error_symbol", g:linter_error_symbol)
-let g:linter_style_warning_symbol =
-            \ get(g:, "linter_style_warning_symbol", g:linter_warning_symbol)
-
+let g:linter_error_symbol = get(g:, "linter_error_symbol", s:linter_symbol)
+let g:linter_warning_symbol = get(g:, "linter_warning_symbol", s:linter_symbol)
+let g:linter_style_error_symbol = get(g:, "linter_style_error_symbol", g:linter_error_symbol)
+let g:linter_style_warning_symbol = get(g:, "linter_style_warning_symbol", g:linter_warning_symbol)
 let g:linter_debug = get(g:, "linter_debug", 0)
 
 

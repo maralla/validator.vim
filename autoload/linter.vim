@@ -47,6 +47,7 @@ function! linter#intall_event_handlers()
         autocmd!
         autocmd CursorMoved  * call linter#on_cursor_move()
         autocmd CursorHold   * call linter#on_cursor_hold()
+        autocmd CursorHoldI  * :python linter.update_errors()
         autocmd BufReadPost  * :python linter.update_errors()
         autocmd BufWritePost * :python linter.update_errors()
         autocmd BufEnter     * :python linter.update_errors()

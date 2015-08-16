@@ -2,6 +2,9 @@
 
 from __future__ import absolute_import
 
+import tempfile
+import os
+
 from Queue import Queue
 from threading import Thread
 
@@ -10,7 +13,7 @@ from .utils import logging, g
 from .vim_utils import (
     get_current_bufnr,
     get_filetype,
-    get_fpath,
+    save
 )
 
 from .checker import load_checkers
@@ -44,6 +47,7 @@ def linter_thread():
 
 class Linter(object):
     def __init__(self):
+        _, self.temp_file = tempfile.mkstemp(prefix="vim-linter")
         self.linter = None
 
     def _start_linter(self):
@@ -51,7 +55,11 @@ class Linter(object):
         self.linter.daemon = True
         self.linter.start()
 
+    def _save_file(self):
+        save(self.temp_file)
+
     def update_errors(self):
+        logging.info("update_errors")
         if location_list.disabled:
             return
 
@@ -66,7 +74,8 @@ class Linter(object):
 
         self.bufnr = get_current_bufnr()
 
-        task = {"cmd": "check", "ft": ft, "fpath": get_fpath(),
+        self._save_file()
+        task = {"cmd": "check", "ft": ft, "fpath": self.temp_file,
                 "bufnr": self.bufnr}
         task_queue.put(task)
 
@@ -78,6 +87,8 @@ class Linter(object):
             self.update_errors()
 
     def exit(self):
+        os.remove(self.temp_file)
+
         if self.linter and self.linter.is_alive():
             task_queue.put({"cmd": "exit"})
             self.linter.join()
