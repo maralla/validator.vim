@@ -59,7 +59,6 @@ class Linter(object):
         save(self.temp_file)
 
     def update_errors(self):
-        logging.info("update_errors")
         if location_list.disabled:
             return
 
@@ -75,6 +74,7 @@ class Linter(object):
         self.bufnr = get_current_bufnr()
 
         self._save_file()
+
         task = {"cmd": "check", "ft": ft, "fpath": self.temp_file,
                 "bufnr": self.bufnr}
         task_queue.put(task)
@@ -87,7 +87,10 @@ class Linter(object):
             self.update_errors()
 
     def exit(self):
-        os.remove(self.temp_file)
+        try:
+            os.remove(self.temp_file)
+        except OSError:
+            pass
 
         if self.linter and self.linter.is_alive():
             task_queue.put({"cmd": "exit"})

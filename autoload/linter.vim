@@ -47,7 +47,7 @@ function! linter#intall_event_handlers()
         autocmd!
         autocmd CursorMoved  * call linter#on_cursor_move()
         autocmd CursorHold   * call linter#on_cursor_hold()
-        autocmd CursorHoldI  * :python linter.update_errors()
+        autocmd CursorHoldI  * call linter#on_cursor_holdi()
         autocmd BufReadPost  * :python linter.update_errors()
         autocmd BufWritePost * :python linter.update_errors()
         autocmd BufEnter     * :python linter.update_errors()
@@ -86,6 +86,12 @@ endfunction
 
 
 function! linter#on_cursor_hold()
+  py linter.update_errors()
+  py location_list.refresh()
+endfunction
+
+function! linter#on_cursor_holdi()
+  py linter.update_errors()
   py location_list.refresh()
 endfunction
 

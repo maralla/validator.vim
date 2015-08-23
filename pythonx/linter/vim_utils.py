@@ -49,4 +49,4 @@ def unplace_sign(sign_id, bufnr):
 
 
 def save(filename):
-    vim.command(":w! {}".format(filename))
+    vim.command("call writefile(getline(1, '$'), '{}')".format(filename))
