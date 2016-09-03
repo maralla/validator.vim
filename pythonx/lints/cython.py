@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from linter import SyntaxChecker
+from validator import Validator
 
 
-class Cython(SyntaxChecker):
+class Cython(Validator):
     __filetype__ = "cython"
 
     checker = "cython"

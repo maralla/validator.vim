@@ -4,26 +4,27 @@ from __future__ import absolute_import
 
 import collections
 import importlib
-import shlex
-import subprocess
 import os
 import os.path
 import re
+import json
 
 from .utils import logging, exe_exist
+
+cache = {}
 
 
 class Meta(type):
     def __init__(cls, name, bases, attrs):
-        if name not in ("SyntaxChecker", "Base"):
-            SyntaxChecker.registry[cls.__filetype__][cls.checker] = cls
+        if name not in ("Validator", "Base"):
+            Validator.registry[cls.__filetype__][cls.checker] = cls
 
         return super(Meta, cls).__init__(name, bases, attrs)
 
 Base = Meta("Base", (object,), {})
 
 
-class SyntaxChecker(Base):
+class Validator(Base):
     registry = collections.defaultdict(dict)
 
     errorformat = None
@@ -56,35 +57,23 @@ class SyntaxChecker(Base):
                 "valid": 1,
                 "type": 'W' if loc["warning"] else 'E'
             })
-            lists.append(loc)
+            lists.append(json.dumps(loc))
         return lists
 
     @classmethod
-    def gen_loclist(cls, fpath, bufnr):
+    def format_cmd(cls, fpath):
         if not cls.filter_file(fpath):
-            return []
+            return ''
 
         if not exe_exist(cls.checker):
             logging.warn("{} not exist".format(cls.checker))
-            return []
+            return ''
 
         if not os.path.exists(fpath):
             logging.warn("{} not exist".format(fpath))
-            return []
+            return ''
 
-        cmd_args = shlex.split(cls.cmd(os.path.basename(fpath)))
-        res = subprocess.Popen(cmd_args, cwd=os.path.dirname(fpath),
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               close_fds=True)
-        out = res.communicate()
-
-        err_lines = '\n'.join(out).\
-            strip().\
-            replace('\r', '').\
-            split('\n')
-
-        loclists = cls.parse_loclist(err_lines, bufnr)
-        return loclists
+        return cls.cmd(fpath)
 
     @classmethod
     def filter_file(cls, fpath):
@@ -94,13 +83,13 @@ class SyntaxChecker(Base):
     def cmd(cls, fname):
         return "{} {} {}".format(cls.checker, cls.args, fname)
 
-checker_manager = SyntaxChecker()
+_validator = Validator()
 
 
 def load_checkers(ft):
-    if ft not in checker_manager:
+    if ft not in _validator:
         try:
             importlib.import_module("lints.{}".format(ft))
         except ImportError:
             return {}
-    return checker_manager[ft]
+    return _validator[ft]

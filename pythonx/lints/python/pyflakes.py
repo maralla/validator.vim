@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from linter import SyntaxChecker
+from validator import Validator
 
 
-class PyFlakes(SyntaxChecker):
+class PyFlakes(Validator):
     __filetype__ = "python"
 
     checker = "flake8"

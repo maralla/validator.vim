@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from linter import SyntaxChecker
+from validator import Validator
 
 
-class Javascript(SyntaxChecker):
+class Javascript(Validator):
     __filetype__ = "javascript"
 
     checker = "jshint"

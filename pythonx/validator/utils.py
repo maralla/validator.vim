@@ -5,11 +5,10 @@ from __future__ import absolute_import
 import os
 import os.path
 import logging
-
-from .vim_utils import get_val
+import vim
 
 log_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                        "linter.log")
+                        "validator.log")
 logging.basicConfig(filename=log_file, level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -21,7 +20,7 @@ g = {}
 
 class DebugFilter(object):
     def filter(self, record):
-        return bool(int(get_val("linter_debug")))
+        return bool(int(vim.eval("g:validator_debug")))
 
 logging.root.addFilter(DebugFilter())
 

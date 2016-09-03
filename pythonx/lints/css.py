@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from linter import SyntaxChecker
+from validator import Validator
 
 
-class Css(SyntaxChecker):
+class Css(Validator):
     __filetype__ = "css"
 
     checker = "csslint"
