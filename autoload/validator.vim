@@ -46,6 +46,7 @@ function validator#handler(ch)
 
 python << EOF
 import validator
+import vim
 
 msg = vim.eval('msg')
 bufnr = vim.eval('nr')
@@ -79,6 +80,7 @@ function! s:check()
 
 python << EOF
 import validator
+import vim
 
 ftype = vim.eval('&filetype')
 if validator.cache.get(ftype) is None:
