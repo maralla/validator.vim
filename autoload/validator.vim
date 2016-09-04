@@ -70,8 +70,7 @@ endfunction
 
 
 function! s:check()
-  let ftype = &filetype
-  if ftype == ''
+  if empty(&filetype)
     return
   endif
 
@@ -81,7 +80,7 @@ function! s:check()
 python << EOF
 import validator
 
-ftype = vim.eval('ftype')
+ftype = vim.eval('&filetype')
 if validator.cache.get(ftype) is None:
     validator.cache[ftype] = list(validator.load_checkers(ftype).values())
 
@@ -91,7 +90,7 @@ EOF
 
   let cmds = pyeval('cmds')
   for cmd in cmds
-    if cmd == ''
+    if empty(cmd)
       continue
     endif
     let s:jobs[cmd] = s:execute(cmd)
@@ -130,6 +129,13 @@ function! validator#enable()
     " command! ValidatorToggle :python validator.toggle()
     call s:install_event_handlers()
     call s:check()
+endfunction
+
+
+function! validator#get_status_string()
+  let nr = bufnr('')
+  let signs = sort(map(keys(get(g:sign_map, nr, {})), {i,x->str2nr(x)}), {a,b->a==b?0:a>b?1:-1})
+  return empty(signs) ? '' : '[Syntax: line:'.signs[0].' ('.len(signs).')]'
 endfunction
 
 let &cpo = s:save_cpo
