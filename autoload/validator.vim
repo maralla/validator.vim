@@ -108,12 +108,24 @@ function! s:on_cursor_move()
 endfunction
 
 
+function! s:on_text_changed()
+  if exists('s:timer')
+    let info = timer_info(s:timer)
+    if !empty(info)
+      call timer_stop(s:timer)
+    endif
+  endif
+
+  let s:timer = timer_start(500, {t->s:check()})
+endfunction
+
+
 function! s:install_event_handlers()
     augroup validator
         autocmd!
         autocmd CursorMoved  * call s:on_cursor_move()
-        autocmd CursorHold   * call s:check()
-        autocmd CursorHoldI  * call s:check()
+        autocmd TextChangedI * call s:on_text_changed()
+        autocmd TextChanged  * call s:on_text_changed()
         autocmd BufReadPost  * call s:check()
         autocmd BufWritePost * call s:check()
         autocmd BufEnter     * call s:check()
