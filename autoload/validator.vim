@@ -5,39 +5,8 @@ set cpo&vim
 
 let s:jobs = {}
 
-function! s:highlight()
-    if !hlexists('ValidatorErrorSign')
-        highlight ValidatorErrorSign ctermfg=88 ctermbg=235
-    endif
-    if !hlexists('ValidatorWarningSign')
-        highlight ValidatorWarningSign ctermfg=3 ctermbg=235
-    endif
-    if !hlexists('ValidatorStyleErrorSign')
-        highlight link ValidatorStyleErrorSign ValidatorErrorSign
-    endif
-    if !hlexists('ValidatorStyleWarningSign')
-        highlight link ValidatorStyleWarningSign ValidatorWarningSign
-    endif
-    if !hlexists('ValidatorStyleErrorLine')
-        highlight link ValidatorStyleErrorLine ValidatorErrorLine
-    endif
-    if !hlexists('ValidatorStyleWarningLine')
-        highlight link ValidatorStyleWarningLine ValidatorWarningLine
-    endif
 
-    " define the signs used to display syntax and style errors/warns
-    execute 'sign define ValidatorError text=' . g:validator_error_symbol .
-        \ ' texthl=ValidatorErrorSign linehl=ValidatorErrorLine'
-    execute 'sign define ValidatorWarning text=' . g:validator_warning_symbol .
-        \ ' texthl=ValidatorWarningSign linehl=ValidatorWarningLine'
-    execute 'sign define ValidatorStyleError text=' . g:validator_style_error_symbol .
-        \ ' texthl=ValidatorStyleErrorSign linehl=ValidatorStyleErrorLine'
-    execute 'sign define ValidatorStyleWarning text=' . g:validator_style_warning_symbol .
-        \ ' texthl=ValidatorStyleWarningSign linehl=ValidatorStyleWarningLine'
-endfunction
-
-
-function validator#handler(ch)
+function s:handle(ch)
   let msg = []
   while ch_status(a:ch) == 'buffered'
     call add(msg, ch_read(a:ch))
@@ -45,15 +14,13 @@ function validator#handler(ch)
   let nr = bufnr('')
 
 python << EOF
+import itertools
 import validator
 import vim
 
-msg = vim.eval('msg')
-bufnr = vim.eval('nr')
-ftype = vim.eval('&ft')
-result = []
-for c in validator.cache[ftype]:
-    result.extend(c.parse_loclist(msg, bufnr))
+msg, bufnr, ftype = map(vim.eval, ('msg', 'nr', '&ft'))
+result = list(itertools.chain(*(c.parse_loclist(msg, bufnr)
+                                for c in validator.cache[ftype])))
 EOF
 
   let loclist = map(pyeval('result'), {i, v -> json_decode(v)})
@@ -66,7 +33,7 @@ function! s:execute(cmd)
     job_stop(s:jobs[a:cmd])
   endif
 
-  return job_start(a:cmd, {"close_cb": "validator#handler"})
+  return job_start(a:cmd, {"close_cb": {c->s:handle(c)}})
 endfunction
 
 
@@ -108,15 +75,24 @@ function! s:on_cursor_move()
 endfunction
 
 
-function! s:on_text_changed()
+function! s:stop_timer()
   if exists('s:timer')
     let info = timer_info(s:timer)
     if !empty(info)
       call timer_stop(s:timer)
     endif
   endif
+endfunction
 
-  let s:timer = timer_start(500, {t->s:check()})
+function! s:on_text_changed()
+  call s:stop_timer()
+  let s:timer = timer_start(800, {t->s:check()})
+endfunction
+
+
+function! s:do_check()
+  call s:stop_timer()
+  call s:check()
 endfunction
 
 
@@ -126,10 +102,27 @@ function! s:install_event_handlers()
         autocmd CursorMoved  * call s:on_cursor_move()
         autocmd TextChangedI * call s:on_text_changed()
         autocmd TextChanged  * call s:on_text_changed()
-        autocmd BufReadPost  * call s:check()
-        autocmd BufWritePost * call s:check()
-        autocmd BufEnter     * call s:check()
+        autocmd BufReadPost  * call s:do_check()
+        autocmd BufWritePost * call s:do_check()
     augroup END
+endfunction
+
+
+function! s:define_sign(type, symbol)
+  exe 'sign define Validator'.a:type.' text='.a:symbol.' texthl=Validator'.a:type.'Sign'
+endfunction
+
+
+function! s:highlight()
+  hi! ValidatorErrorSign ctermfg=88 ctermbg=235
+  hi! ValidatorWarningSign ctermfg=3 ctermbg=235
+  hi! link ValidatorStyleErrorSign ValidatorErrorSign
+  hi! link ValidatorStyleWarningSign ValidatorWarningSign
+
+  call s:define_sign('Error', g:validator_error_symbol)
+  call s:define_sign('Warning', g:validator_warning_symbol)
+  call s:define_sign('StyleError', g:validator_style_error_symbol)
+  call s:define_sign('StyleWarning', g:validator_style_warning_symbol)
 endfunction
 
 
@@ -139,8 +132,6 @@ function! validator#enable()
     endif
 
     call s:highlight()
-
-    " command! ValidatorToggle :python validator.toggle()
     call s:install_event_handlers()
     call s:check()
 endfunction

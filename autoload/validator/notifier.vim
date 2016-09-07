@@ -8,13 +8,13 @@ function! validator#notifier#notify(loclist, bufnr)
   let seen = {}
 
   for loc in a:loclist
-    let lnum = loc['lnum']
+    let lnum = get(loc, 'lnum', 0)
     if lnum <= 0 || has_key(seen, lnum)
       continue
     endif
     let seen[lnum] = v:true
 
-    let severity = loc["type"] == 'W' ? "Warning" : "Error"
+    let severity = get(loc, 'type', '') == 'W' ? "Warning" : "Error"
     let subtype = get(loc, 'subtype', '')
     let type = 'Validator'.subtype.severity
 
@@ -23,15 +23,14 @@ function! validator#notifier#notify(loclist, bufnr)
     endif
 
     let s:sign_id += 1
-    let line = lnum < 1 ? 1 : lnum
     let s:used_sign_ids[a:bufnr][s:sign_id] = v:false
 
     try
-      exec "sign place ".s:sign_id." line=".line." name=".type." buffer=".a:bufnr
+      exec "sign place ".s:sign_id." line=".lnum." name=".type." buffer=".a:bufnr
     catch
     endtry
 
-    let g:sign_map[a:bufnr][line] = loc['text']
+    let g:sign_map[a:bufnr][lnum] = get(loc, 'text', '')
   endfor
 
   call s:clear(a:bufnr)
