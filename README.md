@@ -1,16 +1,28 @@
-Linter
-======
+Validator
+=========
 
-Syntax checker for vim in python.
+Syntax check framework for vim which checks syntax on the fly asynchronously.
 
 
 Requirements
 ------------
 
+You should have a relatively new version of vim which supports such features:
+`job`, `timer` and `lambda`.
+
 Your vim should be compiled with `python` or `python3`.
 
-Linter relies on external syntax checkers, so you need to install the checkers
+Validator relies on external syntax checkers, so you need to install the checkers
 fit for the files you are editting.
+
+
+Builtin Checkers
+----------------
+
+* python, `flake8`
+* cython, `cython`
+* css, `csslint`
+* javascript, `jshint`
 
 
 Install
@@ -18,6 +30,6 @@ Install
 
 I recommend to use a plugin manager for installing.
 
-If you use [NeoBundle](https://github.com/Shougo/neobundle.vim)
+If you use [vim-plug](https://github.com/junegunn/vim-plug)
 
-    NeoBundle 'maralla/vim-linter'
+    Plug 'maralla/validator.vim'
