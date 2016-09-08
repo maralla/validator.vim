@@ -18,7 +18,7 @@ class Cython(Validator):
             """
 
     @classmethod
-    def filter_file(cls, fname):
+    def filter(cls, fname):
         if fname.endswith(".pxd"):
             return False
         return True

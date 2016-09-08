@@ -27,11 +27,11 @@ Base = Meta("Base", (object,), {})
 class Validator(Base):
     registry = collections.defaultdict(dict)
 
-    errorformat = None
     checker = None
     args = ''
 
     _regex_map = {}
+    _cache = {}
 
     def __getitem__(self, ft):
         return self.registry.get(ft, {})
@@ -55,14 +55,14 @@ class Validator(Base):
                 "enum": i + 1,
                 "bufnr": bufnr,
                 "valid": 1,
-                "type": 'W' if loc["warning"] else 'E'
+                "type": 'W' if loc.get("warning") else 'E'
             })
             lists.append(json.dumps(loc))
         return lists
 
     @classmethod
     def format_cmd(cls, fpath):
-        if not cls.filter_file(fpath):
+        if not cls.filter(fpath):
             return ''
 
         if not exe_exist(cls.checker):
@@ -76,7 +76,38 @@ class Validator(Base):
         return cls.cmd(fpath)
 
     @classmethod
-    def filter_file(cls, fpath):
+    def _keygen(cls, file):
+        return "{}-{}-{}".format(cls.__filetype__, cls.checker, file)
+
+    @staticmethod
+    def _find(file):
+        cwd = os.getcwd()
+        while True:
+            path = os.path.join(cwd, file)
+            if os.path.exists(path):
+                return path
+            if cwd == '/':
+                break
+            cwd = os.path.split(cwd)[0]
+
+    @classmethod
+    def _arg(cls, path):
+        try:
+            with open(path) as f:
+                return ' '.join((l.strip() for l in f.readlines()))
+        except Exception:
+            return ''
+
+    @classmethod
+    def parse_arguments(cls, file):
+        key = cls._keygen(file)
+        if key not in cls._cache:
+            path = cls._find(file)
+            cls._cache[key] = '' if path is None else cls._arg(path)
+        return cls._cache[key]
+
+    @classmethod
+    def filter(cls, fpath):
         return True
 
     @classmethod

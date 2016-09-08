@@ -15,8 +15,6 @@ logging.basicConfig(filename=log_file, level=logging.INFO,
 logger = logging.getLogger("requests")
 logger.propagate = False
 
-g = {}
-
 
 class DebugFilter(object):
     def filter(self, record):

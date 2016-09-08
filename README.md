@@ -19,10 +19,12 @@ fit for the files you are editting.
 Builtin Checkers
 ----------------
 
+* c/c++, `clang-tidy`
 * python, `flake8`
 * cython, `cython`
 * css, `csslint`
 * javascript, `jshint`
+* json, `jsonlint`
 
 
 Install
