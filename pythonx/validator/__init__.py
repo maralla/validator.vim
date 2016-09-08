@@ -14,6 +14,34 @@ from .utils import logging, exe_exist
 cache = {}
 
 
+def _get_type(msg):
+    if msg.get('error') is not None:
+        return 'E'
+    if msg.get('warning') is not None:
+        return 'W'
+
+    return 'E' if msg.get('type', 'error').lower() == 'error' else 'W'
+
+
+def _find(file):
+    cwd = os.getcwd()
+    while True:
+        path = os.path.join(cwd, file)
+        if os.path.exists(path):
+            return path
+        if cwd == '/':
+            break
+        cwd = os.path.split(cwd)[0]
+
+
+def _read_args(path):
+    try:
+        with open(path) as f:
+            return ' '.join((l.strip() for l in f.readlines()))
+    except Exception:
+        return ''
+
+
 class Meta(type):
     def __init__(cls, name, bases, attrs):
         if name not in ("Validator", "Base"):
@@ -54,8 +82,7 @@ class Validator(Base):
             loc.update({
                 "enum": i + 1,
                 "bufnr": bufnr,
-                "valid": 1,
-                "type": 'W' if loc.get("warning") else 'E'
+                "type": _get_type(loc)
             })
             lists.append(json.dumps(loc))
         return lists
@@ -79,31 +106,12 @@ class Validator(Base):
     def _keygen(cls, file):
         return "{}-{}-{}".format(cls.__filetype__, cls.checker, file)
 
-    @staticmethod
-    def _find(file):
-        cwd = os.getcwd()
-        while True:
-            path = os.path.join(cwd, file)
-            if os.path.exists(path):
-                return path
-            if cwd == '/':
-                break
-            cwd = os.path.split(cwd)[0]
-
-    @classmethod
-    def _arg(cls, path):
-        try:
-            with open(path) as f:
-                return ' '.join((l.strip() for l in f.readlines()))
-        except Exception:
-            return ''
-
     @classmethod
     def parse_arguments(cls, file):
         key = cls._keygen(file)
         if key not in cls._cache:
-            path = cls._find(file)
-            cls._cache[key] = '' if path is None else cls._arg(path)
+            path = _find(file)
+            cls._cache[key] = '' if path is None else _read_args(path)
         return cls._cache[key]
 
     @classmethod

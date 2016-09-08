@@ -4,11 +4,11 @@ from validator import Validator
 
 
 class Css(Validator):
-    __filetype__ = "css"
+    __filetype__ = 'css'
 
-    checker = "csslint"
-    args = "--format=compact"
-    regex = r"""
+    checker = 'csslint'
+    args = '--format=compact'
+    regex = r'''
             .+:
             \s
             line\s(?P<lnum>\d+),
@@ -23,4 +23,4 @@ class Css(Validator):
             \s
             -
             \s
-            (?P<text>.*)"""
+            (?P<text>.*)'''
