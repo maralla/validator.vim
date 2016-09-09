@@ -3,7 +3,7 @@
 from validator import Validator
 
 
-class Javascript(Validator):
+class Jshint(Validator):
     __filetype__ = "javascript"
 
     checker = "jshint"

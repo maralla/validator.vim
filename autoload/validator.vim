@@ -51,7 +51,11 @@ import vim
 
 ftype = vim.eval('&filetype')
 if validator.cache.get(ftype) is None:
-    validator.cache[ftype] = list(validator.load_checkers(ftype).values())
+    loaded = validator.load_checkers(ftype)
+    checkers = vim.eval("get(g:, 'validator_'.&ft.'_checkers')")
+    if isinstance(checkers, list):
+      loaded = {c: loaded[c] for c in checkers if c in loaded}
+    validator.cache[ftype] = list(loaded.values())
 
 fpath = vim.eval('temp')
 cmds = [c.format_cmd(fpath) for c in validator.cache[ftype]]
