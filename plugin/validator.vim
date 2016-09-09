@@ -11,9 +11,9 @@ endfunction
 if exists("g:loaded_validator_plugin")
     call s:restore_cpo()
     finish
-elseif !has('python')
+elseif !(has('python') || has('python3')) || !(has('job') && has('timers') && has('lambda'))
     echohl WarningMsg |
-                \ echomsg "Validator requires vim compiled with python" |
+                \ echomsg "Validator requires vim compiled with python or python3 and has features `job`, `timers` and `lambda`" |
                 \ echohl None
     call s:restore_cpo()
     finish
@@ -30,6 +30,17 @@ let g:validator_style_error_symbol = get(g:, "validator_style_error_symbol", g:v
 let g:validator_style_warning_symbol = get(g:, "validator_style_warning_symbol", g:validator_warning_symbol)
 let g:validator_debug = get(g:, "validator_debug", 0)
 
+if has("python3")
+    command! -nargs=1 Py py3 <args>
+    function! Pyeval(arg)
+        return py3eval(a:arg)
+    endfunction
+else
+    command! -nargs=1 Py py <args>
+    function! Pyeval(arg)
+        return pyeval(a:arg)
+    endfunction
+endif
 
 augroup validator
     autocmd!
