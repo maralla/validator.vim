@@ -8,7 +8,7 @@ Requirements
 ------------
 
 You should have a relatively new version of vim which supports such features:
-`job`, `timer` and `lambda`.
+`job`, `timers` and `lambda`.
 
 Your vim should be compiled with `python` or `python3`.
 
@@ -23,9 +23,21 @@ Builtin Checkers
 * python, `flake8`
 * cython, `cython`
 * css, `csslint`
-* javascript, `jshint`
+* javascript, `jshint`, `eslint`
 * json, `jsonlint`
 
+
+Configuration
+-------------
+
+Select checkers for a file type:
+
+```vim
+let g:validator_{filetype}_checkers = ['<checker_name>']
+
+" for example, choose eslint to check javascript:
+let g:validator_javascript_checkers = ['eslint']
+```
 
 Install
 -------

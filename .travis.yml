@@ -8,7 +8,10 @@ python:
   - "3.5"
 
 install:
-  - pip install pytest
+  - pip install pytest mock
 
 script:
   - py.test
+
+notifications:
+    email: false
