@@ -13,7 +13,7 @@ function s:handle(ch)
   endwhile
   let nr = bufnr('')
 
-python << EOF
+Py << EOF
 import itertools
 import validator
 import vim
@@ -23,7 +23,7 @@ result = list(itertools.chain(*(c.parse_loclist(msg, bufnr)
                                 for c in validator.cache[ftype])))
 EOF
 
-  let loclist = map(pyeval('result'), {i, v -> json_decode(v)})
+  let loclist = map(Pyeval('result'), {i, v -> json_decode(v)})
   call validator#notifier#notify(loclist, nr)
 endfunction
 
@@ -45,7 +45,7 @@ function! s:check()
   let temp = tempname() . '.' . expand('%:e')
   call writefile(getline(1, '$'), temp)
 
-python << EOF
+Py << EOF
 import validator
 import vim
 
@@ -57,7 +57,7 @@ fpath = vim.eval('temp')
 cmds = [c.format_cmd(fpath) for c in validator.cache[ftype]]
 EOF
 
-  let cmds = pyeval('cmds')
+  let cmds = Pyeval('cmds')
   for cmd in cmds
     if empty(cmd)
       continue
