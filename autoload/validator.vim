@@ -4,6 +4,8 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:jobs = {}
+let s:cmd_count = 0
+let s:loclist = []
 
 
 function s:handle(ch)
@@ -14,17 +16,19 @@ function s:handle(ch)
   let nr = bufnr('')
 
 Py << EOF
-import itertools
-import validator
-import vim
-
+import itertools, validator, vim
 msg, bufnr, ftype = map(vim.eval, ('msg', 'nr', '&ft'))
 result = list(itertools.chain(*(c.parse_loclist(msg, bufnr)
                                 for c in validator.cache[ftype])))
 EOF
 
-  let loclist = map(Pyeval('result'), {i, v -> json_decode(v)})
-  call validator#notifier#notify(loclist, nr)
+  let s:loclist += map(Pyeval('result'), {i, v -> json_decode(v)})
+  let s:cmd_count -= 1
+  if s:cmd_count <= 0
+    call validator#notifier#notify(s:loclist, nr)
+    let s:loclist = []
+  endif
+
 endfunction
 
 
@@ -46,10 +50,8 @@ function! s:check()
   call writefile(getline(1, '$'), temp)
 
 Py << EOF
-import validator
-import vim
-
-ftype = vim.eval('&filetype')
+import validator, vim
+ftype = vim.eval('&ft')
 if validator.cache.get(ftype) is None:
     loaded = validator.load_checkers(ftype)
     checkers = vim.eval("get(g:, 'validator_'.&ft.'_checkers')")
@@ -62,8 +64,11 @@ cmds = [c.format_cmd(fpath) for c in validator.cache[ftype]]
 EOF
 
   let cmds = Pyeval('cmds')
+  let s:cmd_count = len(cmds)
+
   for cmd in cmds
     if empty(cmd)
+      let s:cmd_count -= 1
       continue
     endif
     let s:jobs[cmd] = s:execute(cmd)
@@ -87,6 +92,7 @@ function! s:stop_timer()
     endif
   endif
 endfunction
+
 
 function! s:on_text_changed()
   call s:stop_timer()
