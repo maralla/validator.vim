@@ -29,7 +29,7 @@ def test_parse_loclist():
     assert data == [
         {
             "lnum": "123",
-            "text": "hello wrold",
+            "text": "[ls]hello wrold",
             "enum": 2,
             "type": "E",
             "col": "45",
@@ -37,7 +37,7 @@ def test_parse_loclist():
         },
         {
             "lnum": "456",
-            "text": "abcd",
+            "text": "[ls]abcd",
             "enum": 3,
             "type": "W",
             "col": "9",

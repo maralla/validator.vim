@@ -82,7 +82,8 @@ class Validator(Base):
             loc.update({
                 "enum": i + 1,
                 "bufnr": bufnr,
-                "type": _get_type(loc)
+                "type": _get_type(loc),
+                "text": "[{}]{}".format(cls.checker, loc.get('text', ''))
             })
             lists.append(json.dumps(loc))
         return lists

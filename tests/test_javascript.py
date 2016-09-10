@@ -26,7 +26,7 @@ def test_eslint_parse_loclist():
     res = EsLint.parse_loclist(loclist, 1)
     assert json.loads(res[0]) == {
         "lnum": "1",
-        "text": "\'f\' is defined but never used. (no-unused-vars)",
+        "text": "[eslint]\'f\' is defined but never used. (no-unused-vars)",
         "enum": 1,
         "bufnr": 1,
         "warning": None,
