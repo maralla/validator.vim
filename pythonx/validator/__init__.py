@@ -55,6 +55,7 @@ Base = Meta("Base", (object,), {})
 class Validator(Base):
     registry = collections.defaultdict(dict)
 
+    default = False
     checker = None
     args = ''
 
@@ -126,10 +127,14 @@ class Validator(Base):
 _validator = Validator()
 
 
-def load_checkers(ft):
+def load_checkers(ft, filters=None):
     if ft not in _validator:
         try:
             importlib.import_module("lints.{}".format(ft))
         except ImportError:
             return {}
-    return _validator[ft]
+    checkers = _validator[ft]
+    if not isinstance(filters, list):
+        return {k: c for k, c in checkers.items() if c.default} or checkers
+
+    return {k: c for k, c in checkers.items() if k in filters}

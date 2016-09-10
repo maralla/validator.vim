@@ -6,6 +6,7 @@ function! validator#notifier#notify(loclist, bufnr)
   let g:sign_map[a:bufnr] = {}
 
   let seen = {}
+  let lists = []
 
   for loc in a:loclist
     let lnum = get(loc, 'lnum', 0)
@@ -31,8 +32,10 @@ function! validator#notifier#notify(loclist, bufnr)
     endtry
 
     let g:sign_map[a:bufnr][lnum] = get(loc, 'text', '')
+    call add(lists, loc)
   endfor
 
+  call setqflist(lists, 'r')
   call s:clear(a:bufnr)
 endfunction
 
