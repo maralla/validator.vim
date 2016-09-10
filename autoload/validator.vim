@@ -8,7 +8,7 @@ let s:cmd_count = 0
 let s:loclist = []
 
 
-function s:handle(ch)
+function s:handle(ch, checker)
   let msg = []
   while ch_status(a:ch) == 'buffered'
     call add(msg, ch_read(a:ch))
@@ -16,10 +16,9 @@ function s:handle(ch)
   let nr = bufnr('')
 
 Py << EOF
-import itertools, validator, vim
-msg, bufnr, ftype = map(vim.eval, ('msg', 'nr', '&ft'))
-result = list(itertools.chain(*(c.parse_loclist(msg, bufnr)
-                                for c in validator.cache[ftype])))
+import validator, vim
+msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'nr', '&ft', 'a:checker'))
+result = validator.cache[ftype][checker].parse_loclist(msg, bufnr)
 EOF
 
   let s:loclist += map(Pyeval('result'), {i, v -> json_decode(v)})
@@ -32,12 +31,12 @@ EOF
 endfunction
 
 
-function! s:execute(cmd)
+function! s:execute(cmd, checker)
   if has_key(s:jobs, a:cmd) && job_status(s:jobs[a:cmd]) == 'run'
     job_stop(s:jobs[a:cmd])
   endif
 
-  return job_start(a:cmd, {"close_cb": {c->s:handle(c)}, "in_io": 'null', "err_io": 'out'})
+  return job_start(a:cmd, {"close_cb": {c->s:handle(c, a:checker)}, "in_io": 'null', "err_io": 'out'})
 endfunction
 
 
@@ -53,25 +52,23 @@ Py << EOF
 import validator, vim
 ftype = vim.eval('&ft')
 if validator.cache.get(ftype) is None:
-    loaded = validator.load_checkers(ftype)
     checkers = vim.eval("get(g:, 'validator_'.&ft.'_checkers')")
-    if isinstance(checkers, list):
-      loaded = {c: loaded[c] for c in checkers if c in loaded}
-    validator.cache[ftype] = list(loaded.values())
+    loaded = validator.load_checkers(ftype, checkers)
+    validator.cache[ftype] = loaded
 
 fpath = vim.eval('temp')
-cmds = [c.format_cmd(fpath) for c in validator.cache[ftype]]
+cmds = [(c.checker, c.format_cmd(fpath)) for c in validator.cache[ftype].values()]
 EOF
 
   let cmds = Pyeval('cmds')
   let s:cmd_count = len(cmds)
 
-  for cmd in cmds
+  for [checker, cmd] in cmds
     if empty(cmd)
       let s:cmd_count -= 1
       continue
     endif
-    let s:jobs[cmd] = s:execute(cmd)
+    let s:jobs[cmd] = s:execute(cmd, checker)
   endfor
 endfunction
 

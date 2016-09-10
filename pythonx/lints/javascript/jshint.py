@@ -6,6 +6,8 @@ from validator import Validator
 class Jshint(Validator):
     __filetype__ = "javascript"
 
+    default = True
+
     checker = "jshint"
     args = "--verbose"
     regex = r"""
