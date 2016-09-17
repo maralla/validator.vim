@@ -11,7 +11,7 @@ import json
 
 from .utils import logging, exe_exist
 
-cache = {}
+cache = collections.defaultdict(dict)
 
 
 def _get_type(msg):

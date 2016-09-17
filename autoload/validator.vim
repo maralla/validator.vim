@@ -18,7 +18,8 @@ function s:handle(ch, checker)
 Py << EOF
 import validator, vim
 msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'nr', '&ft', 'a:checker'))
-result = validator.cache[ftype][checker].parse_loclist(msg, bufnr)
+c = validator.cache[ftype].get(checker)
+result = c.parse_loclist(msg, bufnr) if c else []
 EOF
 
   let s:loclist += map(Pyeval('result'), {i, v -> json_decode(v)})
