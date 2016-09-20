@@ -39,6 +39,12 @@ let g:validator_{filetype}_checkers = ['<checker_name>']
 let g:validator_javascript_checkers = ['eslint']
 ```
 
+You can customize error message:
+
+```vim
+let g:validator_error_msg_format = "[ ● %d/%d issues ]"
+```
+
 Install
 -------
 
