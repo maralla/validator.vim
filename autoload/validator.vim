@@ -148,7 +148,7 @@ endfunction
 function! validator#get_status_string()
   let nr = bufnr('')
   let signs = sort(map(keys(get(g:sign_map, nr, {})), {i,x->str2nr(x)}), {a,b->a==b?0:a>b?1:-1})
-  return empty(signs) ? '' : printf("● %d/%d issues", signs[0], len(signs))
+  return empty(signs) ? '' : printf(g:validator_error_msg_format, signs[0], len(signs))
 endfunction
 
 let &cpo = s:save_cpo
