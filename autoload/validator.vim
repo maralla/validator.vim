@@ -18,6 +18,7 @@ function s:handle(ch, checker)
 Py << EOF
 import validator, vim
 msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'nr', '&ft', 'a:checker'))
+ftype = ftype.split('.')[0]
 c = validator.cache[ftype].get(checker)
 result = c.parse_loclist(msg, bufnr) if c else []
 EOF
@@ -51,9 +52,9 @@ function! s:check()
 
 Py << EOF
 import validator, vim
-ftype = vim.eval('&ft')
+ftype = vim.eval('&ft').split('.')[0]
 if validator.cache.get(ftype) is None:
-    checkers = vim.eval("get(g:, 'validator_'.&ft.'_checkers')")
+    checkers = vim.eval("get(g:, 'validator_{}_checkers')".format(ftype))
     loaded = validator.load_checkers(ftype, checkers)
     validator.cache[ftype] = loaded
 
