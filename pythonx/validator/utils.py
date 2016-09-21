@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import os
 import os.path
 import logging
+import platform
 
 log_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                         "validator.log")
@@ -32,9 +33,16 @@ def exe_exist(program):
         if is_exe(program):
             return True
     else:
+        try_paths = []
+        is_win = platform.system() == 'Windows'
+
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return True
+            full_path = os.path.join(path, program)
+            try_paths.append(full_path)
+            if is_win:
+                try_paths.append(full_path + '.exe')
+
+        if any(map(is_exe, try_paths)):
+            return True
     return False
