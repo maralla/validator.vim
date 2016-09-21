@@ -2,9 +2,9 @@
 
 from __future__ import absolute_import
 
+import logging
 import os
 import os.path
-import logging
 import platform
 
 log_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),

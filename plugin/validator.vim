@@ -31,6 +31,7 @@ let g:validator_style_warning_symbol = get(g:, "validator_style_warning_symbol",
 let g:validator_debug = get(g:, "validator_debug", 0)
 let g:validator_error_msg_format = get(g:, "validator_error_msg_format", "● %d/%d issues")
 let g:validator_auto_open_quickfix = get(g:, "validator_auto_open_quickfix", 0)
+let g:validator_filetype_map = get(g:, "validator_filetype_map", {})
 
 if has("python3")
     command! -nargs=1 Py py3 <args>

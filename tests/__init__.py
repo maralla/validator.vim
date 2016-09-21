@@ -7,6 +7,7 @@ def _eval(v):
 
 vim = types.ModuleType('vim')
 vim.eval = _eval
+vim.vars = {}
 
 sys.path.append('./pythonx')
 sys.modules['vim'] = vim

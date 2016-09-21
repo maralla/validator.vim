@@ -4,10 +4,11 @@ from __future__ import absolute_import
 
 import collections
 import importlib
+import json
 import os
 import os.path
 import re
-import json
+import vim
 
 from .utils import logging, exe_exist
 
@@ -61,6 +62,8 @@ class Validator(Base):
 
     _regex_map = {}
     _cache = {}
+    _type_map = {}
+    _type_map_loaded = False
 
     def __getitem__(self, ft):
         return self.registry.get(ft, {})
@@ -128,6 +131,12 @@ _validator = Validator()
 
 
 def load_checkers(ft, filters=None):
+    if not _validator._type_map_loaded:
+        _validator._type_map.update(
+            vim.vars.get('validator_filetype_map', {}))
+        _validator._type_map_loaded = True
+
+    ft = _validator._type_map.get(ft, ft)
     if ft not in _validator:
         try:
             importlib.import_module("lints.{}".format(ft))
