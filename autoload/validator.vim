@@ -41,13 +41,25 @@ function! s:execute(cmd, checker)
 endfunction
 
 
+function! s:clear()
+  let s:loclist = []
+  call validator#notifier#notify(s:loclist, bufnr(''))
+endfunction
+
+
 function! s:check()
   if empty(&filetype)
+    call s:clear()
     return
   endif
 
   let temp = tempname() . '.' . expand('%:e')
-  call writefile(getline(1, '$'), temp)
+  let lines = getline(1, '$')
+  if len(lines) == 1 && empty(lines[0])
+    call s:clear()
+    return
+  endif
+  call writefile(lines, temp)
 
 Py << EOF
 import validator, vim

@@ -35,7 +35,13 @@ function! validator#notifier#notify(loclist, bufnr)
     call add(lists, loc)
   endfor
 
-  call setqflist(lists, 'r')
+  call setloclist(0, lists, 'r')
+  if g:validator_auto_open_quickfix
+    lwindow
+    if &ft == 'qf'
+      wincmd p
+    endif
+  endif
   call s:clear(a:bufnr)
 endfunction
 

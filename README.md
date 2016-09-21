@@ -45,6 +45,12 @@ You can customize error message:
 let g:validator_error_msg_format = "[ ● %d/%d issues ]"
 ```
 
+To auto open quickfix window:
+
+```vim
+let g:validator_auto_open_quickfix = 1
+```
+
 Install
 -------
 
