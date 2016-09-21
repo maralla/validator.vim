@@ -51,6 +51,15 @@ To auto open quickfix window:
 let g:validator_auto_open_quickfix = 1
 ```
 
+To handle file type alias:
+
+```vim
+let g:validator_filetype_map = {'<alias>': '<filetype_supported>'}
+
+" for example
+let g:validator_filetype_map = {"python.django": "python"}
+```
+
 Install
 -------
 
