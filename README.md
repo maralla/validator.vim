@@ -60,6 +60,20 @@ let g:validator_filetype_map = {'<alias>': '<filetype_supported>'}
 let g:validator_filetype_map = {"python.django": "python"}
 ```
 
+To customize the signs colors, you can use the following groups:
+
+```vim
+" For syntax errors & warnings
+ValidatorErrorSign
+ValidatorWarningSign
+
+" For style errors & warnings
+" (By default, use the same colors as the 2 groups above)
+ValidatorStyleErrorSign
+ValidatorStyleWarningSign
+```
+
+
 Install
 -------
 

@@ -134,10 +134,10 @@ endfunction
 
 
 function! s:highlight()
-  hi! ValidatorErrorSign ctermfg=88 ctermbg=235
-  hi! ValidatorWarningSign ctermfg=3 ctermbg=235
-  hi! link ValidatorStyleErrorSign ValidatorErrorSign
-  hi! link ValidatorStyleWarningSign ValidatorWarningSign
+  hi default ValidatorErrorSign ctermfg=88 ctermbg=235
+  hi default ValidatorWarningSign ctermfg=3 ctermbg=235
+  hi default link ValidatorStyleErrorSign ValidatorErrorSign
+  hi default link ValidatorStyleWarningSign ValidatorWarningSign
 
   call s:define_sign('Error', g:validator_error_symbol)
   call s:define_sign('Warning', g:validator_warning_symbol)
