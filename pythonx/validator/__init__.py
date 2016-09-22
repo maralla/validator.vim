@@ -136,11 +136,13 @@ class Validator(Base):
 _validator = Validator()
 
 
-def load_checkers(ft, filters=None):
+def load_checkers(ft):
     if _validator._type_map is None:
         _validator._type_map = vim.eval('g:validator_filetype_map')
 
     ft = _validator._type_map.get(ft, ft)
+    filters = vim.eval('get(g:, "validator_{}_checkers")'.format(ft))
+
     if ft not in _validator:
         try:
             importlib.import_module("lints.{}".format(ft))

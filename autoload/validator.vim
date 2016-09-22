@@ -67,8 +67,7 @@ Py << EOF
 import validator, vim
 ftype = vim.eval('&ft')
 if validator.cache.get(ftype) is None:
-    checkers = vim.eval("get(g:, 'validator_'.&ft.'_checkers')")
-    loaded = validator.load_checkers(ftype, checkers)
+    loaded = validator.load_checkers(ftype)
     validator.cache[ftype] = loaded
 
 fpath = vim.eval('tmp')
