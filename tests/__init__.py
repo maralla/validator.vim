@@ -2,8 +2,13 @@ import sys
 import types
 
 
+eval_map = {
+    'g:validator_filetype_map': {}
+}
+
+
 def _eval(v):
-    return 0
+    return eval_map.get(v, 0)
 
 vim = types.ModuleType('vim')
 vim.eval = _eval

@@ -7,6 +7,7 @@ class PyFlakes(Validator):
     __filetype__ = "python"
 
     checker = "flake8"
+    args = "--filename=*"
     regex = r"""
             (.*?):
             (?P<lnum>\d+):

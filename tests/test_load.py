@@ -16,9 +16,7 @@ class Linter2(Validator):
 def test_load_checkers(monkeypatch):
     import vim
 
-    monkeypatch.setattr(vim, "vars", {
-        "validator_filetype_map": {"abcd": "linter1"}
-    })
+    monkeypatch.setattr(vim, "eval", lambda x: {"abcd": "linter1"})
 
     assert load_checkers("abcd") == {"checker1": Linter1}
     assert load_checkers("linter2") == {"checker2": Linter2}
