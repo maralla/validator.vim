@@ -1,8 +1,11 @@
 Validator
 =========
 
+[![Build Status](https://travis-ci.org/maralla/validator.vim.svg?branch=master)](https://travis-ci.org/maralla/validator.vim)
+
 Syntax check framework for vim which checks syntax on the fly asynchronously.
 
+![Demo](http://i.imgur.com/zRm0qTG.gif)
 
 Requirements
 ------------
