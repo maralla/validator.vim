@@ -19,8 +19,8 @@ function s:handle(ch, checker)
 Py << EOF
 import validator, vim
 msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'nr', '&ft', 'a:checker'))
-c = validator.cache[ftype].get(checker)
-result = c.parse_loclist(msg, bufnr) if c else []
+linter = validator.load_checkers(ftype).get(checker)
+result = linter.parse_loclist(msg, bufnr) if linter else []
 EOF
 
   let s:loclist += map(Pyeval('result'), {i, v -> json_decode(v)})
@@ -65,13 +65,8 @@ function! s:check()
 
 Py << EOF
 import validator, vim
-ftype = vim.eval('&ft')
-if validator.cache.get(ftype) is None:
-    loaded = validator.load_checkers(ftype)
-    validator.cache[ftype] = loaded
-
-fpath = vim.eval('tmp')
-cmds = [(c.checker, c.format_cmd(fpath)) for c in validator.cache[ftype].values()]
+loaded = validator.load_checkers(vim.eval('&ft'))
+cmds = [(c.checker, c.format_cmd(vim.eval('tmp'))) for c in loaded.values()]
 EOF
 
   let cmds = Pyeval('cmds')

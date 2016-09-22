@@ -12,8 +12,6 @@ import vim
 
 from .utils import logging, exe_exist
 
-cache = collections.defaultdict(dict)
-
 
 def _get_type(msg):
     if msg.get('error') is not None:
