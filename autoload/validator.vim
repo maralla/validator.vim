@@ -151,6 +151,8 @@ function! validator#enable()
         return
     endif
 
+    command! ValidatorCheck call s:check()
+
     call s:highlight()
     call s:install_event_handlers()
     call s:check()

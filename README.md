@@ -82,3 +82,12 @@ I recommend to use a plugin manager for installing.
 If you use [vim-plug](https://github.com/junegunn/vim-plug)
 
     Plug 'maralla/validator.vim'
+
+
+Usage
+-----
+
+Validator.vim automatically checks syntax in the background when file content
+changes, so no need to do any trigger manually. If you do want to do a check
+manually use this command `ValidatorCheck`. This command is especially useful
+when you set the file type manually.
