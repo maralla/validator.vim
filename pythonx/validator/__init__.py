@@ -138,7 +138,7 @@ _validator = Validator()
 
 def load_checkers(ft, filters=None):
     if _validator._type_map is None:
-        _validator._type_map = vim.vars.get('validator_filetype_map', {})
+        _validator._type_map = vim.eval('g:validator_filetype_map')
 
     ft = _validator._type_map.get(ft, ft)
     if ft not in _validator:

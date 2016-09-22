@@ -6,6 +6,7 @@ set cpo&vim
 let s:jobs = {}
 let s:cmd_count = 0
 let s:loclist = []
+let s:tempfile = tempname()
 
 
 function s:handle(ch, checker)
@@ -53,13 +54,14 @@ function! s:check()
     return
   endif
 
-  let temp = tempname() . '.' . expand('%:e')
   let lines = getline(1, '$')
   if len(lines) == 1 && empty(lines[0])
     call s:clear()
     return
   endif
-  call writefile(lines, temp)
+  call writefile(lines, s:tempfile)
+
+  let tmp = s:tempfile
 
 Py << EOF
 import validator, vim
@@ -69,7 +71,7 @@ if validator.cache.get(ftype) is None:
     loaded = validator.load_checkers(ftype, checkers)
     validator.cache[ftype] = loaded
 
-fpath = vim.eval('temp')
+fpath = vim.eval('tmp')
 cmds = [(c.checker, c.format_cmd(fpath)) for c in validator.cache[ftype].values()]
 EOF
 
