@@ -6,6 +6,7 @@ import logging
 import os
 import os.path
 import platform
+import vim
 
 log_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                         "validator.log")
@@ -18,8 +19,7 @@ logger.propagate = False
 
 class DebugFilter(object):
     def filter(self, record):
-        import vim
-        return bool(int(vim.eval("g:validator_debug")))
+        return bool(int(vim.vars.get("validator_debug", 0)))
 
 logging.root.addFilter(DebugFilter())
 

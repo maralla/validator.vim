@@ -53,17 +53,23 @@ class Meta(type):
 Base = Meta("Base", (object,), {})
 
 
+class Unusable(object):
+    def __get__(self, inst, owner):
+        raise RuntimeError('unusable')
+
+
 class Validator(Base):
     registry = collections.defaultdict(dict)
 
+    __filetype__ = Unusable()
+    checker = Unusable()
+
     default = False
-    checker = None
     args = ''
 
     _regex_map = {}
     _cache = {}
-    _type_map = {}
-    _type_map_loaded = False
+    _type_map = None
 
     def __getitem__(self, ft):
         return self.registry.get(ft, {})
@@ -131,10 +137,8 @@ _validator = Validator()
 
 
 def load_checkers(ft, filters=None):
-    if not _validator._type_map_loaded:
-        _validator._type_map.update(
-            vim.vars.get('validator_filetype_map', {}))
-        _validator._type_map_loaded = True
+    if _validator._type_map is None:
+        _validator._type_map = vim.vars.get('validator_filetype_map', {})
 
     ft = _validator._type_map.get(ft, ft)
     if ft not in _validator:
