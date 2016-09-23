@@ -8,6 +8,7 @@ class EsLint(Validator):
 
     checker = "eslint"
     args = "-f compact --no-color"
+    args_file = ".eslint-config"
     regex = r"""
             .+?:
             \sline\s(?P<lnum>\d+),
@@ -20,3 +21,8 @@ class EsLint(Validator):
             )
             \s-\s
             (?P<text>.*)"""
+
+    @classmethod
+    def cmd(cls, fname):
+        return "{} {} {} {}".format(cls.checker, cls.args,
+                                    cls.parse_arguments(cls.args_file), fname)

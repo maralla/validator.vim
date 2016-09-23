@@ -17,7 +17,7 @@ def test_eslint_cmd(none_exists):
     with tempfile.NamedTemporaryFile() as fp:
         cmd = EsLint.format_cmd(fp.name)
 
-    assert cmd == 'eslint -f compact --no-color {}'.format(fp.name)
+    assert cmd == 'eslint -f compact --no-color  {}'.format(fp.name)
 
 
 def test_eslint_parse_loclist():
