@@ -9,16 +9,19 @@ let s:loclist = []
 let s:tempfile = tempname()
 
 
-function s:handle(ch, checker)
+function s:handle(ch, ft, nr, checker)
   let msg = []
   while ch_status(a:ch) == 'buffered'
     call add(msg, ch_read(a:ch))
   endwhile
-  let nr = bufnr('')
+
+  if bufwinnr(a:nr) == -1
+    return
+  endif
 
 Py << EOF
 import validator, vim
-msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'nr', '&ft', 'a:checker'))
+msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'a:nr', 'a:ft', 'a:checker'))
 linter = validator.load_checkers(ftype).get(checker)
 result = linter.parse_loclist(msg, bufnr) if linter else []
 EOF
@@ -26,37 +29,40 @@ EOF
   let s:loclist += map(Pyeval('result'), {i, v -> json_decode(v)})
   let s:cmd_count -= 1
   if s:cmd_count <= 0
-    call validator#notifier#notify(s:loclist, nr)
+    call validator#notifier#notify(s:loclist, a:nr)
     let s:loclist = []
   endif
 
 endfunction
 
 
-function! s:execute(cmd, checker)
+function! s:execute(cmd, ft, nr, checker)
   if has_key(s:jobs, a:cmd) && job_status(s:jobs[a:cmd]) == 'run'
-    job_stop(s:jobs[a:cmd])
+    call job_stop(s:jobs[a:cmd])
   endif
 
-  return job_start(a:cmd, {"close_cb": {c->s:handle(c, a:checker)}, "in_io": 'null', "err_io": 'out'})
+  return job_start(a:cmd, {"close_cb": {c->s:handle(c, a:ft, a:nr, a:checker)}, "in_io": 'null', "err_io": 'out'})
 endfunction
 
 
-function! s:clear()
+function! s:clear(nr)
   let s:loclist = []
-  call validator#notifier#notify(s:loclist, bufnr(''))
+  call validator#notifier#notify(s:loclist, a:nr)
 endfunction
 
 
 function! s:check()
-  if empty(&filetype)
-    call s:clear()
+  let ft = &filetype
+  let nr = bufnr('')
+
+  if empty(ft)
+    call s:clear(nr)
     return
   endif
 
   let lines = getline(1, '$')
   if len(lines) == 1 && empty(lines[0])
-    call s:clear()
+    call s:clear(nr)
     return
   endif
   call writefile(lines, s:tempfile)
@@ -65,7 +71,7 @@ function! s:check()
 
 Py << EOF
 import validator, vim
-loaded = validator.load_checkers(vim.eval('&ft'))
+loaded = validator.load_checkers(vim.eval('ft'))
 cmds = [(c.checker, c.format_cmd(vim.eval('tmp'))) for c in loaded.values()]
 EOF
 
@@ -77,7 +83,7 @@ EOF
       let s:cmd_count -= 1
       continue
     endif
-    let s:jobs[cmd] = s:execute(cmd, checker)
+    let s:jobs[cmd] = s:execute(cmd, ft, nr, checker)
   endfor
 endfunction
 
