@@ -135,6 +135,9 @@ _validator = Validator()
 
 
 def load_checkers(ft):
+    if not ft:
+        return {}
+
     if _validator._type_map is None:
         _validator._type_map = vim.eval('g:validator_filetype_map')
 
@@ -144,9 +147,14 @@ def load_checkers(ft):
     if ft not in _validator:
         try:
             importlib.import_module("lints.{}".format(ft))
-        except ImportError:
-            return {}
+        except Exception as e:
+            logging.exception(e)
+            _validator.registry[ft] = {}
     checkers = _validator[ft]
+
+    if not checkers:
+        return checkers
+
     if not isinstance(filters, list):
         return {k: c for k, c in checkers.items() if c.default} or checkers
 
