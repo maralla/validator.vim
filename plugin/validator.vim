@@ -23,6 +23,7 @@ endif
 let g:sign_map = {}
 let g:loaded_validator_plugin = 1
 let s:validator_symbol = '∙'
+let s:ignores = ['nerdtree', 'qf', 'unite', 'help', 'text']
 
 let g:validator_error_symbol = get(g:, "validator_error_symbol", s:validator_symbol)
 let g:validator_warning_symbol = get(g:, "validator_warning_symbol", s:validator_symbol)
@@ -32,6 +33,7 @@ let g:validator_debug = get(g:, "validator_debug", 0)
 let g:validator_error_msg_format = get(g:, "validator_error_msg_format", "● %d/%d issues")
 let g:validator_auto_open_quickfix = get(g:, "validator_auto_open_quickfix", 0)
 let g:validator_filetype_map = get(g:, "validator_filetype_map", {})
+let g:validator_ignore = extend(get(g:, "validator_ignore", []), s:ignores)
 
 if has("python3")
     command! -nargs=1 Py py3 <args>

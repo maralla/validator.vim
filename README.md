@@ -63,6 +63,12 @@ let g:validator_filetype_map = {'<alias>': '<filetype_supported>'}
 let g:validator_filetype_map = {"python.django": "python"}
 ```
 
+Ignore file types:
+
+```vim
+let g:validator_ignore = ['<filetype>']
+```
+
 To customize the signs colors, you can use the following groups:
 
 ```vim

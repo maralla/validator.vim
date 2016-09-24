@@ -105,10 +105,6 @@ class Validator(Base):
             logging.warn("{} not exist".format(cls.checker))
             return ''
 
-        if not os.path.exists(fpath):
-            logging.warn("{} not exist".format(fpath))
-            return ''
-
         return cls.cmd(fpath)
 
     @classmethod
