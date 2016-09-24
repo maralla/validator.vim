@@ -3,13 +3,45 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:jobs = {}
-let s:cmd_count = 0
 let s:loclist = []
-let s:tempfile = tempname()
+let s:files = {}
+
+let s:manager = {'refcount': 0, 'tempfile': '', 'jobs': []}
+
+function s:manager.add_job(job)
+  if job_status(a:job) == 'run'
+    call add(self.jobs, a:job)
+    let self.refcount += 1
+  endif
+endfunction
+
+function s:manager.reset_jobs()
+  for job in self.jobs
+    if job_status(job) == 'run'
+      call job_stop(job)
+      call self.decref()
+    endif
+  endfor
+  let self.jobs = []
+endfunction
+
+function s:manager.decref()
+  let self.refcount -= 1
+  if self.refcount <= 0
+    try
+      call delete(self.tempfile)
+      call remove(s:file, self.tempfile)
+    catch
+    endtry
+    let self.tempfile = ''
+    let self.refcount = 0
+  endif
+endfunction
 
 
 function s:handle(ch, ft, nr, checker)
+  call s:manager.decref()
+
   let msg = []
   while ch_status(a:ch) == 'buffered'
     call add(msg, ch_read(a:ch))
@@ -20,28 +52,17 @@ function s:handle(ch, ft, nr, checker)
   endif
 
 Py << EOF
-import validator, vim
 msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'a:nr', 'a:ft', 'a:checker'))
 linter = validator.load_checkers(ftype).get(checker)
 result = linter.parse_loclist(msg, bufnr) if linter else []
 EOF
 
   let s:loclist += map(Pyeval('result'), {i, v -> json_decode(v)})
-  let s:cmd_count -= 1
-  if s:cmd_count <= 0
+  if s:manager.refcount <= 0
     call validator#notifier#notify(s:loclist, a:nr)
     let s:loclist = []
   endif
 
-endfunction
-
-
-function! s:execute(cmd, ft, nr, checker)
-  if has_key(s:jobs, a:cmd) && job_status(s:jobs[a:cmd]) == 'run'
-    call job_stop(s:jobs[a:cmd])
-  endif
-
-  return job_start(a:cmd, {"close_cb": {c->s:handle(c, a:ft, a:nr, a:checker)}, "in_io": 'null', "err_io": 'out'})
 endfunction
 
 
@@ -53,38 +74,57 @@ endfunction
 
 function! s:check()
   let ft = &filetype
-  let nr = bufnr('')
+  if index(g:validator_ignore, ft) != -1
+    return
+  endif
 
-  if empty(ft)
+  call s:manager.reset_jobs()
+
+  let nr = bufnr('')
+  let name = expand('%:t')
+
+  if empty(ft) || empty(name)
     call s:clear(nr)
     return
   endif
+
+  let ext = expand('%:e')
+  let ext = empty(ext) ? '' : '.'.ext
+
+  let s:manager.tempfile = fnamemodify(expand('%:p'), ':s/'.name.'$/__validator_temp__'.ext.'/')
+  let tmp = s:manager.tempfile
 
   let lines = getline(1, '$')
   if len(lines) == 1 && empty(lines[0])
     call s:clear(nr)
     return
   endif
-  call writefile(lines, s:tempfile)
-
-  let tmp = s:tempfile
 
 Py << EOF
-import validator, vim
 loaded = validator.load_checkers(vim.eval('ft'))
 cmds = [(c.checker, c.format_cmd(vim.eval('tmp'))) for c in loaded.values()]
 EOF
 
   let cmds = Pyeval('cmds')
-  let s:cmd_count = len(cmds)
+  let written = v:false
 
   for [checker, cmd] in cmds
     if empty(cmd)
-      let s:cmd_count -= 1
       continue
     endif
-    let s:jobs[cmd] = s:execute(cmd, ft, nr, checker)
+    if !written
+      call writefile(lines, tmp)
+      let s:files[tmp] = 1
+      let written = v:true
+    endif
+    let job = job_start(cmd, {"close_cb": {c->s:handle(c, ft, nr, checker)}, "in_io": 'null', "err_io": 'out'})
+    call s:manager.add_job(job)
   endfor
+
+  " no job spawned
+  if written && s:manager.refcount <= 0
+    call s:manager.decref()
+  endif
 endfunction
 
 
@@ -112,6 +152,13 @@ function! s:on_text_changed()
 endfunction
 
 
+function! s:on_vim_leave()
+  for f in keys(s:files)
+    try | call delete(f) | catch | endtry
+  endfor
+endfunction
+
+
 function! s:do_check()
   call s:stop_timer()
   call s:check()
@@ -126,6 +173,7 @@ function! s:install_event_handlers()
         autocmd TextChanged  * call s:on_text_changed()
         autocmd BufReadPost  * call s:do_check()
         autocmd BufWritePost * call s:do_check()
+        autocmd VimLeave * call s:on_vim_leave()
     augroup END
 endfunction
 
@@ -152,6 +200,8 @@ function! validator#enable()
     if &diff
         return
     endif
+
+    Py import validator, vim
 
     command! ValidatorCheck call s:check()
 
