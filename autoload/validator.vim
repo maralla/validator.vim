@@ -62,13 +62,14 @@ EOF
     call validator#notifier#notify(s:loclist, a:nr)
     let s:loclist = []
   endif
-
 endfunction
 
 
 function! s:clear(nr)
   let s:loclist = []
-  call validator#notifier#notify(s:loclist, a:nr)
+  if has_key(g:sign_map, a:nr)
+    call validator#notifier#notify(s:loclist, a:nr)
+  endif
 endfunction
 
 
@@ -131,8 +132,12 @@ endfunction
 function! s:on_cursor_move()
   let nr = bufnr('')
   let line = line('.')
-  let signs = get(g:sign_map, nr, {})
-  echo get(signs, line, '')
+
+  if !has_key(g:sign_map, nr)
+    return
+  endif
+
+  echo get(g:sign_map[nr], line, '')
 endfunction
 
 
