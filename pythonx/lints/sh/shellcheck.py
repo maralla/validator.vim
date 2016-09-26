@@ -3,7 +3,7 @@
 from validator import Validator
 
 
-class Sh(Validator):
+class ShellcheckLint(Validator):
     __filetype__ = "sh"
 
     checker = "shellcheck"
