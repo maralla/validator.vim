@@ -16,13 +16,19 @@ function s:manager.add_job(job)
 endfunction
 
 function s:manager.reset_jobs()
+  let still_alive = []
   for job in self.jobs
     if job_status(job) == 'run'
       call job_stop(job)
-      call self.decref()
+      " recheck
+      if job_status(job) == 'run'
+        call add(still_alive, job)
+      else
+        call self.decref()
+      endif
     endif
   endfor
-  let self.jobs = []
+  let self.jobs = still_alive
 endfunction
 
 function s:manager.decref()
