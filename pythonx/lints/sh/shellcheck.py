@@ -9,10 +9,9 @@ class ShellcheckLint(Validator):
     checker = "shellcheck"
     args = "-x -f gcc"
     regex = r"""
-            .+:
+            .+?:
             (?P<lnum>\d+):
             (?P<col>\d+):
-            .*
             \s
             (
                (?P<error>error)

@@ -124,7 +124,7 @@ EOF
       let s:files[tmp] = 1
       let written = v:true
     endif
-    let job = job_start(cmd, {"close_cb": {c->s:handle(c, ft, nr, checker)}, "in_io": 'null', "err_io": 'out'})
+    let job = job_start(cmd, {"close_cb": s:gen_handler(ft, nr, checker), "in_io": 'null', "err_io": 'out'})
     call s:manager.add_job(job)
   endfor
 
@@ -132,6 +132,11 @@ EOF
   if written && s:manager.refcount <= 0
     call s:manager.decref()
   endif
+endfunction
+
+
+function s:gen_handler(ft, nr, checker)
+  return {c->s:handle(c, a:ft, a:nr, a:checker)}
 endfunction
 
 

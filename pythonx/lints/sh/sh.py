@@ -9,8 +9,9 @@ class ShLint(Validator):
     checker = "sh"
     args = "-n"
     regex = r"""
-            .+:\sline\s
+            .+?:\sline\s
             (?P<lnum>\d+):
+            \s
             syntax\serror:
             \s
             (?P<text>.*)"""
