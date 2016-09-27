@@ -34,6 +34,7 @@ let g:validator_error_msg_format = get(g:, "validator_error_msg_format", "● %d
 let g:validator_auto_open_quickfix = get(g:, "validator_auto_open_quickfix", 0)
 let g:validator_filetype_map = get(g:, "validator_filetype_map", {})
 let g:validator_ignore = extend(get(g:, "validator_ignore", []), s:ignores)
+let g:validator_permament_sign = get(g:, "validator_permament_sign", 0)
 
 if has("python3")
     command! -nargs=1 Py py3 <args>
