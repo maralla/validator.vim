@@ -42,7 +42,7 @@ let g:validator_{filetype}_checkers = ['<checker_name>']
 let g:validator_javascript_checkers = ['eslint']
 ```
 
-You can customize error message:
+To customize error message:
 
 ```vim
 let g:validator_error_msg_format = "[ ● %d/%d issues ]"
@@ -80,6 +80,14 @@ ValidatorWarningSign
 " (By default, use the same colors as the 2 groups above)
 ValidatorStyleErrorSign
 ValidatorStyleWarningSign
+```
+
+To show permanently the sign column and prevent annonying behavior when the sign column appear and then it disappears.
+
+![Demo](./images/sign.jpg)
+
+```vim
+let g:validator_permament_sign = 1
 ```
 
 

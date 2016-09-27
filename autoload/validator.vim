@@ -223,6 +223,12 @@ function! validator#enable()
 
     call s:highlight()
     call s:install_event_handlers()
+
+    if g:validator_permament_sign
+      autocmd BufEnter * exec 'sign define ValidatorEmpty'
+      autocmd BufEnter * exec 'exe ":sign place 9999 line=1 name=ValidatorEmpty buffer=".bufnr("")'
+    endif
+
     call s:check()
 endfunction
 
