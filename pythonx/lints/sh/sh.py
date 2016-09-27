@@ -12,6 +12,4 @@ class ShLint(Validator):
             .+?:\sline\s
             (?P<lnum>\d+):
             \s
-            syntax\serror:
-            \s
             (?P<text>.*)"""

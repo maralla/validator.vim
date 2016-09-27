@@ -10,7 +10,7 @@ def test_regex():
     res = ShLint.parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "10",
-        "text": "[sh]unexpected end of file",
+        "text": "[sh]syntax error: unexpected end of file",
         "enum": 1,
         "type": "E",
         "bufnr": 1
