@@ -18,7 +18,6 @@ Your vim should be compiled with `python` or `python3`.
 Validator relies on external syntax checkers, so you need to install the checkers
 fit for the files you are editting.
 
-
 Builtin Checkers
 ----------------
 
@@ -28,7 +27,8 @@ Builtin Checkers
 * css, `csslint`
 * javascript, `jshint`, `eslint`
 * json, `jsonlint`
-
+* sh, `sh`, `shellcheck`
+* rst, `rst2pseudoxml`
 
 Configuration
 -------------
@@ -82,14 +82,14 @@ ValidatorStyleErrorSign
 ValidatorStyleWarningSign
 ```
 
-To show permanently the sign column and prevent annonying behavior when the sign column appear and then it disappears.
+To show permanently the sign column and prevent annonying behavior when the
+sign column appear and then it disappears.
 
 ![Demo](./images/sign.jpg)
 
 ```vim
 let g:validator_permament_sign = 1
 ```
-
 
 Install
 -------
@@ -99,7 +99,6 @@ I recommend to use a plugin manager for installing.
 If you use [vim-plug](https://github.com/junegunn/vim-plug)
 
     Plug 'maralla/validator.vim'
-
 
 Usage
 -----
