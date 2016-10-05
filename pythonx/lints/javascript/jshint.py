@@ -17,7 +17,7 @@ class Jshint(Validator):
             \s
             col\s(?P<col>\d+),
             \s
-            (?P<text>.+)
+            (?P<text>.+
             \s
             \(
                 (
@@ -26,4 +26,5 @@ class Jshint(Validator):
                     (?P<warning>W)
                 )
                 (?P<code>\d+)
-            \)"""
+            \)
+            )"""
