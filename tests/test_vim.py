@@ -32,6 +32,7 @@ def test_vimlparser_message_wihtout_code():
         "warning": None,
     }
 
+
 def test_vimlparser_message_with_code():
     msg = ['vim-unite-vcs/autoload/vcs/git/revert.vim:29:19: vimlparser: E488: Trailing characters: )']
 

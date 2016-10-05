@@ -29,7 +29,7 @@ Builtin Checkers
 * json, `jsonlint`
 * sh, `sh`, `shellcheck`
 * rst, `rst2pseudoxml`
-* vim, `vint`
+* vim, `vint`, `vimlparser`
 
 Configuration
 -------------
