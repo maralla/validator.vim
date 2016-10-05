@@ -4,7 +4,7 @@ import pytest
 import tempfile
 import validator
 
-from lints.javascript import EsLint
+from lints.javascript import EsLint, Jshint
 
 
 @pytest.fixture
@@ -33,4 +33,20 @@ def test_eslint_parse_loclist():
         "error": "Error",
         "type": "E",
         "col": "10"
+    }
+
+def test_jshint_parse_loclist():
+    loclist = ["/some/foo.js: line 268, col 33,"
+               " eval can be harmful. (W061)"]
+    res = Jshint.parse_loclist(loclist, 1)
+    assert json.loads(res[0]) == {
+        "lnum": "268",
+        "text": "[jshint]eval can be harmful. (W061)",
+        "enum": 1,
+        "bufnr": 1,
+        "warning": "W",
+        "error": None,
+        "type": "W",
+        "code": "061",
+        "col": "33"
     }
