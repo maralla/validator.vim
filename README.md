@@ -27,6 +27,7 @@ Builtin Checkers
 * css, `csslint`
 * javascript, `jshint`, `eslint`
 * json, `jsonlint`
+* lua, `luac`, `luacheck`
 * sh, `sh`, `shellcheck`
 * rst, `rst2pseudoxml`
 * vim, `vint`, `vimlparser`
