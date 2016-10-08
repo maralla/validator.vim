@@ -73,10 +73,10 @@ function! s:clear(nr)
 endfunction
 
 
-function! s:send_buffer(job)
+function! s:send_buffer(job, lines)
   let ch = job_getchannel(a:job)
   if ch_status(ch) == 'open'
-    call ch_sendraw(ch, join(getline(1, '$'), "\n"))
+    call ch_sendraw(ch, join(a:lines, "\n"))
     call ch_close_in(ch)
   endif
 endfunction
@@ -120,22 +120,17 @@ EOF
     if empty(cmd)
       continue
     endif
-    if !written
+    if !stdin && !written
       call writefile(lines, tmp)
       let written = v:true
     endif
     let in_io = stdin ? 'pipe' : 'null'
     let job = job_start(cmd, {"close_cb": s:gen_handler(ft, nr, checker), "in_io": in_io, "err_io": 'out'})
     if stdin
-      call s:send_buffer(job)
+      call s:send_buffer(job, lines)
     endif
     call s:manager.add_job(job)
   endfor
-
-  " no job spawned
-  if written && s:manager.refcount <= 0
-    call s:manager.decref()
-  endif
 endfunction
 
 
