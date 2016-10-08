@@ -4,9 +4,9 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:loclist = []
-let s:files = {}
+let s:tempfile = tempname()
 
-let s:manager = {'refcount': 0, 'tempfile': '', 'jobs': []}
+let s:manager = {'refcount': 0, 'jobs': []}
 
 function s:manager.add_job(job)
   if job_status(a:job) == 'run'
@@ -34,12 +34,6 @@ endfunction
 function s:manager.decref()
   let self.refcount -= 1
   if self.refcount <= 0
-    try
-      call delete(self.tempfile)
-      call remove(s:file, self.tempfile)
-    catch
-    endtry
-    let self.tempfile = ''
     let self.refcount = 0
   endif
 endfunction
@@ -79,6 +73,15 @@ function! s:clear(nr)
 endfunction
 
 
+function! s:send_buffer(job, lines)
+  let ch = job_getchannel(a:job)
+  if ch_status(ch) == 'open'
+    call ch_sendraw(ch, join(a:lines, "\n"))
+    call ch_close_in(ch)
+  endif
+endfunction
+
+
 function! s:check()
   let ft = &filetype
   if index(g:validator_ignore, ft) != -1
@@ -97,9 +100,7 @@ function! s:check()
 
   let ext = expand('%:e')
   let ext = empty(ext) ? '' : '.'.ext
-
-  let s:manager.tempfile = fnamemodify(expand('%:p'), ':s/'.name.'$/__validator_temp__'.ext.'/')
-  let tmp = s:manager.tempfile
+  let tmp = s:tempfile.ext
 
   let lines = getline(1, '$')
   if len(lines) == 1 && empty(lines[0])
@@ -109,29 +110,27 @@ function! s:check()
 
 Py << EOF
 loaded = validator.load_checkers(vim.eval('ft'))
-cmds = [(c.checker, c.format_cmd(vim.eval('tmp'))) for c in loaded.values()]
+cmds = [(c.checker, c.format_cmd(vim.eval('tmp')), c.stdin) for c in loaded.values()]
 EOF
 
   let cmds = Pyeval('cmds')
   let written = v:false
 
-  for [checker, cmd] in cmds
+  for [checker, cmd, stdin] in cmds
     if empty(cmd)
       continue
     endif
-    if !written
+    if !stdin && !written
       call writefile(lines, tmp)
-      let s:files[tmp] = 1
       let written = v:true
     endif
-    let job = job_start(cmd, {"close_cb": s:gen_handler(ft, nr, checker), "in_io": 'null', "err_io": 'out'})
+    let in_io = stdin ? 'pipe' : 'null'
+    let job = job_start(cmd, {"close_cb": s:gen_handler(ft, nr, checker), "in_io": in_io, "err_io": 'out'})
+    if stdin
+      call s:send_buffer(job, lines)
+    endif
     call s:manager.add_job(job)
   endfor
-
-  " no job spawned
-  if written && s:manager.refcount <= 0
-    call s:manager.decref()
-  endif
 endfunction
 
 
@@ -168,13 +167,6 @@ function! s:on_text_changed()
 endfunction
 
 
-function! s:on_vim_leave()
-  for f in keys(s:files)
-    try | call delete(f) | catch | endtry
-  endfor
-endfunction
-
-
 function! s:do_check()
   call s:stop_timer()
   call s:check()
@@ -189,7 +181,6 @@ function! s:install_event_handlers()
         autocmd TextChanged  * call s:on_text_changed()
         autocmd BufReadPost  * call s:do_check()
         autocmd BufWritePost * call s:do_check()
-        autocmd VimLeave * call s:on_vim_leave()
     augroup END
 endfunction
 

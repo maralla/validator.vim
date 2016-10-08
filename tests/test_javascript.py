@@ -17,7 +17,8 @@ def test_eslint_cmd(none_exists):
     with tempfile.NamedTemporaryFile() as fp:
         cmd = EsLint.format_cmd(fp.name)
 
-    assert cmd == 'eslint -f compact --no-color {}'.format(fp.name)
+    assert cmd == ('eslint -f compact --no-color --stdin'
+                   ' --stdin-filename test_file')
 
 
 def test_eslint_parse_loclist():
@@ -34,6 +35,7 @@ def test_eslint_parse_loclist():
         "type": "E",
         "col": "10"
     }
+
 
 def test_jshint_parse_loclist():
     loclist = ["/some/foo.js: line 268, col 33,"

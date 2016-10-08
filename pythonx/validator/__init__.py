@@ -62,6 +62,7 @@ class Validator(Base):
     __filetype__ = Unusable()
     checker = Unusable()
 
+    stdin = False
     default = False
     args = ''
 
@@ -122,6 +123,10 @@ class Validator(Base):
     @classmethod
     def filter(cls, fpath):
         return True
+
+    @classmethod
+    def filename(self):
+        return vim.current.buffer.name
 
     @classmethod
     def cmd(cls, fname):
