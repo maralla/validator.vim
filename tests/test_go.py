@@ -6,7 +6,7 @@ def test_gofmt():
     msg = ["pythia/internal/tools/go/loader/testdata/badpkgdecl.go:1:34:"
            " expected 'package', found 'EOF'"]
 
-    res = GoFmtLint.parse_loclist(msg, 1)
+    res = GoFmtLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "1",
         "col": "34",
@@ -21,7 +21,7 @@ def test_golint():
     msg = ["pythia/internal/tools/go/loader/testdata/badpkgdecl.go:1:34:"
            " expected 'package', found 'EOF'"]
 
-    res = GolintLint.parse_loclist(msg, 1)
+    res = GolintLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "1",
         "col": "34",

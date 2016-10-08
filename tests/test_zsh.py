@@ -7,7 +7,7 @@ def test_zsh():
         '.zshrc:598: no such file or directory: /etc/ssh/ssh_known_hosts2',
     ]
 
-    res = ZshLint.parse_loclist(msg, 1)
+    res = ZshLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "598",
         "bufnr": 1,
