@@ -25,6 +25,7 @@ let g:loaded_validator_plugin = 1
 let s:validator_symbol = '∙'
 let s:ignores = ['nerdtree', 'qf', 'unite', 'help', 'text']
 
+let g:validator_option = {}
 let g:validator_error_symbol = get(g:, 'validator_error_symbol', s:validator_symbol)
 let g:validator_warning_symbol = get(g:, 'validator_warning_symbol', s:validator_symbol)
 let g:validator_style_error_symbol = get(g:, 'validator_style_error_symbol', g:validator_error_symbol)
