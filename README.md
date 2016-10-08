@@ -93,6 +93,29 @@ sign column appear and then it disappears.
 let g:validator_permament_sign = 1
 ```
 
+To specify the checker executable path or pass checker arguments manually:
+
+```vim
+let g:validator_option = {
+      \   'exe': {
+      \      '<filetype>': {'<checker>': '<path>'},
+      \    },
+      \    'args': {
+      \      '<filetype>': {'<checker>': '<args>'}
+      \    }
+      \ }
+
+" For example
+let g:validator_option = {
+      \   'exe': {
+      \      'python': {'flake8': '/Users/maralla/.dotfiles/virtualenvs/py27/bin/flake8'},
+      \    },
+      \    'args': {
+      \      'python': {'flake8': '--max-line-length=120'}
+      \    }
+      \ }
+```
+
 Install
 -------
 

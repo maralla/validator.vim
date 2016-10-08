@@ -44,7 +44,7 @@ def _read_args(path):
 class Meta(type):
     def __init__(cls, name, bases, attrs):
         if name not in ("Validator", "Base"):
-            Validator.registry[cls.__filetype__][cls.checker] = cls
+            Validator.registry[cls.__filetype__][cls.checker] = cls()
 
         return super(Meta, cls).__init__(name, bases, attrs)
 
@@ -76,14 +76,13 @@ class Validator(Base):
     def __contains__(self, ft):
         return ft in self.registry
 
-    @classmethod
-    def parse_loclist(cls, loclist, bufnr):
-        if cls.checker not in cls._regex_map:
-            cls._regex_map[cls.checker] = re.compile(cls.regex, re.VERBOSE)
+    def parse_loclist(self, loclist, bufnr):
+        if self.checker not in self._regex_map:
+            self._regex_map[self.checker] = re.compile(self.regex, re.VERBOSE)
 
         lists = []
         for i, l in enumerate(loclist):
-            g = cls._regex_map[cls.checker].match(l)
+            g = self._regex_map[self.checker].match(l)
             if not g:
                 continue
 
@@ -92,45 +91,47 @@ class Validator(Base):
                 "enum": i + 1,
                 "bufnr": bufnr,
                 "type": _get_type(loc),
-                "text": "[{}]{}".format(cls.checker, loc.get('text', ''))
+                "text": "[{}]{}".format(self.checker, loc.get('text', ''))
             })
             lists.append(json.dumps(loc))
         return lists
 
-    @classmethod
-    def format_cmd(cls, fpath):
-        if not cls.filter(fpath):
+    def format_cmd(self, fpath):
+        if not self.filter(fpath):
             return ''
 
-        if not exe_exist(cls.checker):
-            logging.warn("{} not exist".format(cls.checker))
+        if not exe_exist(self.exe):
+            logging.warn("{} not exist".format(self.exe))
             return ''
 
-        return cls.cmd(fpath)
+        return self.cmd(fpath)
 
-    @classmethod
-    def _keygen(cls, file):
-        return "{}-{}-{}".format(cls.__filetype__, cls.checker, file)
-
-    @classmethod
-    def parse_arguments(cls, file):
-        key = cls._keygen(file)
-        if key not in cls._cache:
+    def parse_arguments(self, file):
+        key = '{}-{}-{}'.format(self.__filetype__, self.checker, file)
+        if key not in self._cache:
             path = _find(file)
-            cls._cache[key] = '' if path is None else _read_args(path)
-        return cls._cache[key]
+            self._cache[key] = '' if path is None else _read_args(path)
+        return self._cache[key]
 
-    @classmethod
-    def filter(cls, fpath):
+    def filter(self, fpath):
         return True
 
-    @classmethod
+    @property
     def filename(self):
         return vim.current.buffer.name
 
-    @classmethod
-    def cmd(cls, fname):
-        return "{} {} {}".format(cls.checker, cls.args, fname)
+    @property
+    def exe(self):
+        return vim.eval('validator#utils#option("exe", "{}", "{}")'.format(
+            self.__filetype__, self.checker)) or self.checker
+
+    @property
+    def cmd_args(self):
+        return vim.eval('validator#utils#option("args", "{}", "{}")'.format(
+            self.__filetype__, self.checker)) or self.args
+
+    def cmd(self, fname):
+        return "{} {} {}".format(self.exe, self.cmd_args, fname)
 
 _validator = Validator()
 

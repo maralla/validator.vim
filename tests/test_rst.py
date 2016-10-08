@@ -7,7 +7,7 @@ def test_rst2pseudoxml_severe_dot_regex():
         'Some Document.rst:355: (SEVERE/4) Unexpected section title or transition.',
     ]
 
-    res = RST2PseudoXMLLint.parse_loclist(msg, 1)
+    res = RST2PseudoXMLLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "355",
         "bufnr": 1,
@@ -24,7 +24,7 @@ def test_rst2pseudoxml_severe_colon_regex():
         'Another.rst:123: (SEVERE/4) Unexpected section title or transition:',
     ]
 
-    res = RST2PseudoXMLLint.parse_loclist(msg, 1)
+    res = RST2PseudoXMLLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "123",
         "bufnr": 1,
@@ -41,7 +41,7 @@ def test_rst2pseudoxml_warning_regex():
         'Inte.rst:251: (WARNING/2) Title level inconsistent.'
     ]
 
-    res = RST2PseudoXMLLint.parse_loclist(msg, 1)
+    res = RST2PseudoXMLLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "251",
         "bufnr": 1,
