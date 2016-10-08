@@ -6,8 +6,9 @@ from validator import Validator
 class EsLint(Validator):
     __filetype__ = "javascript"
 
+    stdin = True
     checker = "eslint"
-    args = "-f compact --no-color"
+    args = "-f compact --no-color --stdin"
     regex = r"""
             .+?:
             \sline\s(?P<lnum>\d+),
@@ -20,3 +21,8 @@ class EsLint(Validator):
             )
             \s-\s
             (?P<text>.*)"""
+
+    @classmethod
+    def cmd(cls, fname):
+        args = "{} --stdin-filename {}".format(cls.args, cls.filename())
+        return ' '.join([cls.checker, args])
