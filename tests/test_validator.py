@@ -1,5 +1,7 @@
 import json
 import tempfile
+import mock
+import vim
 
 from validator import Validator
 
@@ -25,7 +27,7 @@ def test_parse_loclist():
         '456:9 warning: abcd'
     ]
 
-    data = [json.loads(l) for l in NoName.parse_loclist(loclist, 1)]
+    data = [json.loads(l) for l in NoName().parse_loclist(loclist, 1)]
     assert data == [
         {
             "lnum": "123",
@@ -48,6 +50,18 @@ def test_parse_loclist():
 
 def test_format_cmd():
     with tempfile.NamedTemporaryFile() as fp:
-        cmd = NoName.format_cmd(fp.name)
+        cmd = NoName().format_cmd(fp.name)
 
     assert cmd == 'ls -a -b -c -d {}'.format(fp.name)
+
+
+def test_exe():
+    with mock.patch.object(vim, 'eval', mock.Mock(return_value='')) as e:
+        assert NoName().exe == 'ls'
+    e.assert_called_with('validator#utils#option("exe", "no-name", "ls")')
+
+
+def test_args():
+    with mock.patch.object(vim, 'eval', mock.Mock(return_value='')) as e:
+        assert NoName().cmd_args == '-a -b -c -d'
+    e.assert_called_with('validator#utils#option("args", "no-name", "ls")')

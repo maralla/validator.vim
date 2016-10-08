@@ -7,7 +7,7 @@ def test_regex():
         '__validator_temp__.sh: line 10: syntax error: unexpected end of file',
     ]
 
-    res = ShLint.parse_loclist(msg, 1)
+    res = ShLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "10",
         "text": "[sh]syntax error: unexpected end of file",
@@ -22,7 +22,7 @@ def test_shellcheck_regex():
         "hello.sh:6:1: error: Did you forget the 'then' for this 'if'? [SC1049]",  # noqa
     ]
 
-    res = ShellcheckLint.parse_loclist(msg, 1)
+    res = ShellcheckLint().parse_loclist(msg, 1)
     assert json.loads(res[0]) == {
         "lnum": "6",
         "text": "[shellcheck]Did you forget the \'then\' for this \'if\'? [SC1049]",  # noqa

@@ -22,7 +22,6 @@ class Cpp(Validator):
             \s
             (?P<text>.*)"""
 
-    @classmethod
-    def cmd(cls, fname):
+    def cmd(self, fname):
         return "{} {} -- {}".format(
-            cls.checker, fname, cls.parse_arguments(cls.args_file))
+            self.exe, fname, self.parse_arguments(self.args_file))

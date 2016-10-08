@@ -17,8 +17,7 @@ class Cython(Validator):
             (?P<text>.*)
             """
 
-    @classmethod
-    def filter(cls, fname):
+    def filter(self, fname):
         if fname.endswith(".pxd"):
             return False
         return True

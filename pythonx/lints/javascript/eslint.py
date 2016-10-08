@@ -8,7 +8,7 @@ class EsLint(Validator):
 
     stdin = True
     checker = "eslint"
-    args = "-f compact --no-color --stdin"
+    args = "-f compact --no-color"
     regex = r"""
             .+?:
             \sline\s(?P<lnum>\d+),
@@ -22,7 +22,7 @@ class EsLint(Validator):
             \s-\s
             (?P<text>.*)"""
 
-    @classmethod
-    def cmd(cls, fname):
-        args = "{} --stdin-filename {}".format(cls.args, cls.filename())
-        return ' '.join([cls.checker, args])
+    def cmd(self, fname):
+        args = "{} --stdin --stdin-filename {}".format(
+            self.cmd_args, self.filename)
+        return ' '.join([self.exe, args])
