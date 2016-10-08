@@ -8,7 +8,7 @@ def test_zsh():
     ]
 
     res = ZshLint().parse_loclist(msg, 1)
-    assert json.loads(res[0]) == {
+    assert json.loads(res)[0] == {
         "lnum": "598",
         "bufnr": 1,
         "enum": 1,
