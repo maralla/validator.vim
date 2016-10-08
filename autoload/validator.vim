@@ -57,7 +57,7 @@ linter = validator.load_checkers(ftype).get(checker)
 result = linter.parse_loclist(msg, bufnr) if linter else []
 EOF
 
-  let s:loclist += map(Pyeval('result'), {i, v -> json_decode(v)})
+  let s:loclist += json_decode(Pyeval('result'))
   if s:manager.refcount <= 0
     call validator#notifier#notify(s:loclist, a:nr)
     let s:loclist = []
@@ -67,7 +67,7 @@ endfunction
 
 function! s:clear(nr)
   let s:loclist = []
-  if has_key(g:sign_map, a:nr)
+  if has_key(g:_sign_map, a:nr)
     call validator#notifier#notify(s:loclist, a:nr)
   endif
 endfunction
@@ -88,15 +88,13 @@ function! s:check()
     return
   endif
 
-  call s:manager.reset_jobs()
-
   let nr = bufnr('')
-  let name = expand('%:t')
-
-  if empty(ft) || empty(name)
+  if empty(ft)
     call s:clear(nr)
     return
   endif
+
+  call s:manager.reset_jobs()
 
   let ext = expand('%:e')
   let ext = empty(ext) ? '' : '.'.ext
@@ -143,11 +141,11 @@ function! s:on_cursor_move()
   let nr = bufnr('')
   let line = line('.')
 
-  if !has_key(g:sign_map, nr)
+  if !has_key(g:_sign_map, nr)
     return
   endif
 
-  echo get(g:sign_map[nr], line, '')
+  echo get(get(g:_sign_map[nr], 'text', {}), line, '')
 endfunction
 
 
@@ -226,7 +224,8 @@ endfunction
 
 function! validator#get_status_string()
   let nr = bufnr('')
-  let signs = sort(map(keys(get(g:sign_map, nr, {})), {i,x->str2nr(x)}), {a,b->a==b?0:a>b?1:-1})
+  let text_map = get(get(g:_sign_map, nr, {}), 'text', {})
+  let signs = sort(map(keys(text_map), {i,x->str2nr(x)}), {a,b->a==b?0:a>b?1:-1})
   return empty(signs) ? '' : printf(g:validator_error_msg_format, signs[0], len(signs))
 endfunction
 

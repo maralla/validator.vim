@@ -44,7 +44,7 @@ def _read_args(path):
 class Meta(type):
     def __init__(cls, name, bases, attrs):
         if name not in ("Validator", "Base"):
-            Validator.registry[cls.__filetype__][cls.checker] = cls()
+            Validator._registry[cls.__filetype__][cls.checker] = cls()
 
         return super(Meta, cls).__init__(name, bases, attrs)
 
@@ -57,24 +57,39 @@ class Unusable(object):
 
 
 class Validator(Base):
-    registry = collections.defaultdict(dict)
+    """ Base class for all checkers
 
+    Subclass must provide both `__filetype__` and `checker` attributes.
+    """
+    _registry = collections.defaultdict(dict)
+
+    # File type the checker works on.
     __filetype__ = Unusable()
+    # Checker name
     checker = Unusable()
 
+    # When `True` the checker read file content from stdin. `False` means the
+    # checker read file content from a temporary file.
     stdin = False
+    # If a file type has default checkers, only the defaults are used for
+    # checking. If no defaults, all checkers are used. If the user defined
+    # `g:validator_<filetype>_checkers`, the defined checkers has the highest
+    # priority and are used for checking.
     default = False
+    # Arguments for the checker.
     args = ''
 
     _regex_map = {}
     _cache = {}
-    _type_map = None
+    _type_map = {
+        'c': 'cpp'
+    }
 
     def __getitem__(self, ft):
-        return self.registry.get(ft, {})
+        return self._registry.get(ft, {})
 
     def __contains__(self, ft):
-        return ft in self.registry
+        return ft in self._registry
 
     def parse_loclist(self, loclist, bufnr):
         if self.checker not in self._regex_map:
@@ -93,8 +108,8 @@ class Validator(Base):
                 "type": _get_type(loc),
                 "text": "[{}]{}".format(self.checker, loc.get('text', ''))
             })
-            lists.append(json.dumps(loc))
-        return lists
+            lists.append(loc)
+        return json.dumps(lists)
 
     def format_cmd(self, fpath):
         if not self.filter(fpath):
@@ -130,6 +145,12 @@ class Validator(Base):
         return vim.eval('validator#utils#option("args", "{}", "{}")'.format(
             self.__filetype__, self.checker)) or self.args
 
+    @property
+    def type_map(self):
+        m = vim.eval('get(g:, "validator_filetype_map", {})')
+        self._type_map.update(m)
+        return self._type_map
+
     def cmd(self, fname):
         return "{} {} {}".format(self.exe, self.cmd_args, fname)
 
@@ -140,10 +161,7 @@ def load_checkers(ft):
     if not ft:
         return {}
 
-    if _validator._type_map is None:
-        _validator._type_map = vim.eval('g:validator_filetype_map')
-
-    ft = _validator._type_map.get(ft, ft)
+    ft = _validator.type_map.get(ft, ft)
     filters = vim.eval('get(g:, "validator_{}_checkers")'.format(ft))
 
     if ft not in _validator:
@@ -151,7 +169,7 @@ def load_checkers(ft):
             importlib.import_module("lints.{}".format(ft))
         except Exception as e:
             logging.exception(e)
-            _validator.registry[ft] = {}
+            _validator._registry[ft] = {}
     checkers = _validator[ft]
 
     if not checkers:
