@@ -8,7 +8,7 @@ def test_regex():
     ]
 
     res = ShLint().parse_loclist(msg, 1)
-    assert json.loads(res[0]) == {
+    assert json.loads(res)[0] == {
         "lnum": "10",
         "text": "[sh]syntax error: unexpected end of file",
         "enum": 1,
@@ -23,7 +23,7 @@ def test_shellcheck_regex():
     ]
 
     res = ShellcheckLint().parse_loclist(msg, 1)
-    assert json.loads(res[0]) == {
+    assert json.loads(res)[0] == {
         "lnum": "6",
         "text": "[shellcheck]Did you forget the \'then\' for this \'if\'? [SC1049]",  # noqa
         "enum": 1,

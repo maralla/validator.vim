@@ -27,8 +27,8 @@ def test_parse_loclist():
         '456:9 warning: abcd'
     ]
 
-    data = [json.loads(l) for l in NoName().parse_loclist(loclist, 1)]
-    assert data == [
+    data = NoName().parse_loclist(loclist, 1)
+    assert json.loads(data) == [
         {
             "lnum": "123",
             "text": "[ls]hello wrold",

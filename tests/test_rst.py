@@ -4,11 +4,11 @@ from lints.rst import RST2PseudoXMLLint
 
 def test_rst2pseudoxml_severe_dot_regex():
     msg = [
-        'Some Document.rst:355: (SEVERE/4) Unexpected section title or transition.',
+        'Some Document.rst:355: (SEVERE/4) Unexpected section title or transition.',  # noqa
     ]
 
     res = RST2PseudoXMLLint().parse_loclist(msg, 1)
-    assert json.loads(res[0]) == {
+    assert json.loads(res)[0] == {
         "lnum": "355",
         "bufnr": 1,
         "enum": 1,
@@ -25,7 +25,7 @@ def test_rst2pseudoxml_severe_colon_regex():
     ]
 
     res = RST2PseudoXMLLint().parse_loclist(msg, 1)
-    assert json.loads(res[0]) == {
+    assert json.loads(res)[0] == {
         "lnum": "123",
         "bufnr": 1,
         "enum": 1,
@@ -42,7 +42,7 @@ def test_rst2pseudoxml_warning_regex():
     ]
 
     res = RST2PseudoXMLLint().parse_loclist(msg, 1)
-    assert json.loads(res[0]) == {
+    assert json.loads(res)[0] == {
         "lnum": "251",
         "bufnr": 1,
         "enum": 1,
