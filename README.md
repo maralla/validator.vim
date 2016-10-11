@@ -96,24 +96,17 @@ let g:validator_permament_sign = 1
 To specify the checker executable path or pass checker arguments manually:
 
 ```vim
-let g:validator_option = {
-      \   'exe': {
-      \      '<filetype>': {'<checker>': '<path>'},
-      \    },
-      \    'args': {
-      \      '<filetype>': {'<checker>': '<args>'}
-      \    }
-      \ }
+" If not specified `<args_name>` is `<filetype>_<checker>`.
+let g:validator_<args_name>_args = '<args>'
+" If not specified `<binary_name>` is `<filetype>_<checker>`.
+let g:validator_<binary_name>_binary = '/path/to/executable'
+
+" For c/c++
+let g:validator_clang_tidy_binary = '/path/to/executable'
 
 " For example
-let g:validator_option = {
-      \   'exe': {
-      \      'python': {'flake8': '/Users/maralla/.dotfiles/virtualenvs/py27/bin/flake8'},
-      \    },
-      \    'args': {
-      \      'python': {'flake8': '--max-line-length=120'}
-      \    }
-      \ }
+let g:validator_python_flake8_args = '--max-line-length=120'
+let g:validator_python_flake8_binary = '/Users/maralla/.dotfiles/virtualenvs/py27/bin/flake8'
 ```
 
 Install
