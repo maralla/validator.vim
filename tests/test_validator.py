@@ -11,6 +11,7 @@ class NoName(Validator):
 
     checker = "ls"
     args = "-a -b -c -d"
+    args_option = binary_option = 'no_name'
     regex = r"""
             (?P<lnum>\d+):
             (?P<col>\d+)
@@ -55,13 +56,13 @@ def test_format_cmd():
     assert cmd == 'ls -a -b -c -d {}'.format(fp.name)
 
 
-def test_exe():
+def test_binary():
     with mock.patch.object(vim, 'eval', mock.Mock(return_value='')) as e:
-        assert NoName().exe == 'ls'
-    e.assert_called_with('validator#utils#option("exe", "no-name", "ls")')
+        assert NoName().binary == 'ls'
+    e.assert_called_with('get(g:, "validator_no_name_binary", "")')
 
 
 def test_args():
     with mock.patch.object(vim, 'eval', mock.Mock(return_value='')) as e:
         assert NoName().cmd_args == '-a -b -c -d'
-    e.assert_called_with('validator#utils#option("args", "no-name", "ls")')
+    e.assert_called_with('get(g:, "validator_no_name_args", "")')

@@ -25,4 +25,4 @@ class EsLint(Validator):
     def cmd(self, fname):
         args = "{} --stdin --stdin-filename {}".format(
             self.cmd_args, self.filename)
-        return ' '.join([self.exe, args])
+        return ' '.join([self.binary, args])

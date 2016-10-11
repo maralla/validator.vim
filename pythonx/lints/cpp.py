@@ -7,6 +7,7 @@ class Cpp(Validator):
     __filetype__ = "cpp"
 
     checker = "clang-tidy"
+    binary_option = "clang_tidy"
     args_file = ".clang-tidy-config"
     regex = r"""
             .+:
@@ -24,4 +25,4 @@ class Cpp(Validator):
 
     def cmd(self, fname):
         return "{} {} -- {}".format(
-            self.exe, fname, self.parse_arguments(self.args_file))
+            self.binary, fname, self.parse_arguments(self.args_file))

@@ -79,6 +79,11 @@ class Validator(Base):
     # Arguments for the checker.
     args = ''
 
+    # Option name for user to specify checker arguments
+    args_option = None
+    # binary name for user to specify the path of the checker executable
+    binary_option = None
+
     _regex_map = {}
     _cache = {}
     _type_map = {
@@ -115,8 +120,8 @@ class Validator(Base):
         if not self.filter(fpath):
             return ''
 
-        if not exe_exist(self.exe):
-            logging.warn("{} not exist".format(self.exe))
+        if not exe_exist(self.binary):
+            logging.warn("{} not exist".format(self.binary))
             return ''
 
         return self.cmd(fpath)
@@ -136,14 +141,20 @@ class Validator(Base):
         return vim.current.buffer.name
 
     @property
-    def exe(self):
-        return vim.eval('validator#utils#option("exe", "{}", "{}")'.format(
-            self.__filetype__, self.checker)) or self.checker
+    def binary(self):
+        name = self.binary_option or '{}_{}'.format(
+            self.__filetype__, self.checker)
+
+        return vim.eval(
+            'get(g:, "validator_{}_binary", "")'.format(name)) or self.checker
 
     @property
     def cmd_args(self):
-        return vim.eval('validator#utils#option("args", "{}", "{}")'.format(
-            self.__filetype__, self.checker)) or self.args
+        name = self.args_option or '{}_{}'.format(
+            self.__filetype__, self.checker)
+
+        return vim.eval(
+            'get(g:, "validator_{}_args", "")'.format(name)) or self.args
 
     @property
     def type_map(self):
@@ -152,7 +163,7 @@ class Validator(Base):
         return self._type_map
 
     def cmd(self, fname):
-        return "{} {} {}".format(self.exe, self.cmd_args, fname)
+        return "{} {} {}".format(self.binary, self.cmd_args, fname)
 
 _validator = Validator()
 
