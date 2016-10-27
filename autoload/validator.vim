@@ -47,17 +47,9 @@ function s:handle(ch, ft, nr, checker)
     call add(msg, ch_read(a:ch))
   endwhile
 
-  if bufwinnr(a:nr) == -1
-    return
-  endif
+  if !bufexists(a:nr) | return | endif
 
-Py << EOF
-msg, bufnr, ftype, checker = map(vim.eval, ('msg', 'a:nr', 'a:ft', 'a:checker'))
-linter = validator.load_checkers(ftype).get(checker)
-result = linter.parse_loclist(msg, bufnr) if linter else []
-EOF
-
-  let s:loclist += json_decode(Pyeval('result'))
+  let s:loclist += validator#utils#parse_loclist(msg, a:nr, a:ft, a:checker)
   if s:manager.refcount <= 0
     call validator#notifier#notify(s:loclist, a:nr)
     let s:loclist = []
@@ -84,9 +76,7 @@ endfunction
 
 function! s:check()
   let ft = &filetype
-  if index(g:validator_ignore, ft) != -1
-    return
-  endif
+  if index(g:validator_ignore, ft) != -1 | return | endif
 
   let nr = bufnr('')
   if empty(ft)
@@ -106,18 +96,11 @@ function! s:check()
     return
   endif
 
-Py << EOF
-loaded = validator.load_checkers(vim.eval('ft'))
-cmds = [(c.checker, c.format_cmd(vim.eval('tmp')), c.stdin) for c in loaded.values()]
-EOF
-
-  let cmds = Pyeval('cmds')
+  let cmds = validator#utils#load_checkers(ft, tmp)
   let written = v:false
 
   for [checker, cmd, stdin] in cmds
-    if empty(cmd)
-      continue
-    endif
+    if empty(cmd) | continue | endif
     if !stdin && !written
       call writefile(lines, tmp)
       let written = v:true
