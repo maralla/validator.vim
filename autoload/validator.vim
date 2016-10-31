@@ -5,6 +5,7 @@ set cpo&vim
 
 let s:loclist = []
 let s:tempfile = tempname()
+let s:width = 16
 
 let s:manager = {'refcount': 0, 'jobs': []}
 
@@ -76,7 +77,7 @@ endfunction
 
 function! s:check()
   let ft = &filetype
-  if index(g:validator_ignore, ft) != -1 | return | endif
+  if  pumvisible() || index(g:validator_ignore, ft) != -1 | return | endif
 
   let nr = bufnr('')
   if empty(ft)
@@ -128,7 +129,12 @@ function! s:on_cursor_move()
     return
   endif
 
-  echo get(get(g:_sign_map[nr], 'text', {}), line, '')
+  let msg = get(get(g:_sign_map[nr], 'text', {}), line, '')
+  let expected = winwidth(0) - s:width
+  if strwidth(msg) > expected
+    let msg = msg[:expected].'...'
+  endif
+  echo msg
 endfunction
 
 
