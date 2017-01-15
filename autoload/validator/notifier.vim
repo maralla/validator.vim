@@ -35,7 +35,7 @@ function! validator#notifier#notify(loclist, bufnr)
 
   call setloclist(0, lists, 'r')
   if g:validator_auto_open_quickfix
-    lwindow
+    botright lwindow 4
     if &ft ==? 'qf'
       wincmd p
     endif
