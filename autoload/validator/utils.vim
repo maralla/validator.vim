@@ -1,18 +1,19 @@
+let s:py = has('python3') ? 'py3' : 'py'
+let s:pyeval = function(has('python3') ? 'py3eval' : 'pyeval')
+
+
+function! validator#utils#setup_python()
+  exe s:py 'from validator import api as validator_api'
+endfunction
+
+
 function! validator#utils#load_checkers(ft, tmp)
-Py << EOF
-import validator, vim
-loaded = validator.load_checkers(vim.eval('a:ft'))
-cmds = [(c.checker, c.format_cmd(vim.eval('a:tmp')), c.stdin) for c in loaded.values()]
-EOF
-  return Pyeval('cmds')
+  exe s:py 'res = validator_api.get_checkers()'
+  return s:pyeval('res')
 endfunction
 
 
 function! validator#utils#parse_loclist(msg, nr, ft, checker)
-Py << EOF
-msg, bufnr, ftype, checker = map(vim.eval, ('a:msg', 'a:nr', 'a:ft', 'a:checker'))
-linter = validator.load_checkers(ftype).get(checker)
-result = linter.parse_loclist(msg, bufnr) if linter else '[]'
-EOF
-  return json_decode(Pyeval('result'))
+  exe s:py 'res = validator_api.parse_loclist()'
+  return json_decode(s:pyeval('res'))
 endfunction

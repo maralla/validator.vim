@@ -130,7 +130,7 @@ function! s:on_cursor_move()
   endif
 
   let msg = get(get(g:_sign_map[nr], 'text', {}), line, '')
-  let expected = winwidth(0) - s:width
+  let expected = &columns - s:width
   if strwidth(msg) > expected
     let msg = msg[:expected].'...'
   endif
@@ -195,7 +195,7 @@ function! validator#enable()
         return
     endif
 
-    Py import validator, vim
+    call validator#utils#setup_python()
 
     command! ValidatorCheck call s:check()
 
