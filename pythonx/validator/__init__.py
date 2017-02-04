@@ -97,6 +97,8 @@ class Validator(Base):
         return ft in self._registry
 
     def parse_loclist(self, loclist, bufnr):
+        logging.warn("parse input = {}".format([self, loclist, bufnr]))
+
         if self.checker not in self._regex_map:
             self._regex_map[self.checker] = re.compile(self.regex, re.VERBOSE)
 
@@ -114,6 +116,8 @@ class Validator(Base):
                 "text": "[{}]{}".format(self.checker, loc.get('text', ''))
             })
             lists.append(loc)
+
+        logging.warn("parsed lists = {}".format(lists))
         return json.dumps(lists)
 
     def format_cmd(self, fpath):
