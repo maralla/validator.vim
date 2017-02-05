@@ -62,9 +62,6 @@ def test_jscs_parse_loclist():
         "text": "[jscs]requireSpaces: Missing space before opening round brace",
         "enum": 1,
         "bufnr": 1,
-        "warning": None,
-        "error": "Error",
         "type": "E",
-        "code": None,
         "col": "29"
     }
