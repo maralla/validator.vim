@@ -25,7 +25,7 @@ Builtin Checkers
 * python, `flake8`
 * cython, `cython`
 * css, `csslint`
-* javascript, `jshint`, `eslint`
+* javascript, `jshint`, `eslint`, `jscs`
 * ruby, `mri`, `rubocop`
 * json, `jsonlint`
 * lua, `luac`, `luacheck`
