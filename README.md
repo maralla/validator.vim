@@ -105,9 +105,13 @@ let g:validator_<binary_name>_binary = '/path/to/executable'
 " For c/c++
 let g:validator_clang_tidy_binary = '/path/to/executable'
 
-" For example
+" For flake8
 let g:validator_python_flake8_args = '--max-line-length=120'
 let g:validator_python_flake8_binary = '/Users/maralla/.dotfiles/virtualenvs/py27/bin/flake8'
+
+" For rubocop
+let g:validator_ruby_rubocop_args = '-f s -c .rubocop.yml'
+let g:validator_ruby_rubocop_binary = '/Users/maralla/.rvm/gems/ruby-2.3.0/bin/rubocop'
 ```
 
 Install
@@ -126,3 +130,17 @@ Validator.vim automatically checks syntax in the background when file content
 changes, so no need to do any trigger manually. If you do want to do a check
 manually use this command `ValidatorCheck`. This command is especially useful
 when you set the file type manually.
+
+Debugging
+-----
+
+Enable the debugging with:
+
+```vim
+let g:validator_debug = 1
+```
+
+The output is logged in plugin installation directory:
+
+e.g. 
+`~/.vim/bundle/validator.vim/pythonx/validator.log`

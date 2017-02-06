@@ -7,17 +7,17 @@ class Rubocop(Validator):
     __filetype__ = 'ruby'
 
     checker = 'rubocop'
-    args = '-f s'
+    args = '-f s -c .rubocop.yml'
     regex = r"""
             (
                 (?P<error>E)
                 |
                 (?P<warning>(W|C))
             ):
-            \s
+            \s*
             (?P<lnum>\d+):
-            \s
+            \s*
             (?P<col>\d+):
-            \s
+            \s*
             (?P<text>.*)
             """

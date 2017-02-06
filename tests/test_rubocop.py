@@ -32,7 +32,7 @@ def test_rubocop_warning():
     }]
 
 def test_rubocop_style():
-    msg = ['C: 1: 3: Extra empty line detected at class body end']
+    msg = [u'C:  1: 3: Extra empty line detected at class body end']
 
     res = Rubocop().parse_loclist(msg, 1)
     assert json.loads(res) == [{
