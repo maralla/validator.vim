@@ -4,7 +4,7 @@ import pytest
 import tempfile
 import validator
 
-from lints.javascript import EsLint, Jshint
+from lints.javascript import EsLint, Jshint, Jscs
 
 
 @pytest.fixture
@@ -51,4 +51,17 @@ def test_jshint_parse_loclist():
         "type": "W",
         "code": "061",
         "col": "33"
+    }
+
+def test_jscs_parse_loclist():
+    loclist = ["some/index.js: line 102, col 29,"
+            " requireSpaces: Missing space before opening round brace"]
+    res = Jscs().parse_loclist(loclist, 1)
+    assert json.loads(res)[0] == {
+        "lnum": "102",
+        "text": "[jscs]requireSpaces: Missing space before opening round brace",
+        "enum": 1,
+        "bufnr": 1,
+        "type": "E",
+        "col": "29"
     }
