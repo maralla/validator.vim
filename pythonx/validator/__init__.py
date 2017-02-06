@@ -182,9 +182,11 @@ def load_checkers(ft):
     if ft not in _validator:
         try:
             importlib.import_module("lints.{}".format(ft))
-        except Exception as e:
-            logging.exception(e)
-            _validator._registry[ft] = {}
+        except ImportError:
+            try:
+                importlib.import_module("validator_{}".format(ft))
+            except ImportError:
+                _validator._registry[ft] = {}
     checkers = _validator[ft]
 
     if not checkers:
