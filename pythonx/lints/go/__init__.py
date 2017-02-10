@@ -2,3 +2,4 @@
 
 from .golint import GolintLint  # noqa
 from .gofmt import GoFmtLint  # noqa
+from .gometalinter import GoMetalinterLint  # noqa

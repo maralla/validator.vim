@@ -125,7 +125,7 @@ class Validator(Base):
             return ''
 
         if not exe_exist(self.binary):
-            logging.warn("{} not exist".format(self.binary))
+            logging.warn("{} does not exist".format(self.binary))
             return ''
 
         return self.cmd(fpath)

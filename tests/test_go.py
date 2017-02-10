@@ -1,5 +1,34 @@
 import json
-from lints.go import GoFmtLint, GolintLint
+from lints.go import GoFmtLint, GolintLint, GoMetalinterLint
+
+
+def test_gometalinter():
+    msgs = ["main.go:3:8:warning: unused struct field rune literal not "
+            "terminated (and 1 more errors) (structcheck)",
+            "/foo/main.go:10::warning: declaration of \"x\" shadows "
+            "declaration at main.go:6 (vetshadow)"]
+
+    res = GoMetalinterLint().parse_loclist(msgs, 1)
+    assert json.loads(res)[0] == {
+        "lnum": "3",
+        "col": "8",
+        "text": '[gometalinter]unused struct field rune literal not terminated (and 1 more errors) (structcheck)',
+        "bufnr": 1,
+        "type": "W",
+        "enum": 1,
+        "error": None,
+        "warning": "warning"
+    }
+    assert json.loads(res)[1] == {
+        "lnum": "10",
+        "col": None,
+        "text": '[gometalinter]declaration of "x" shadows declaration at main.go:6 (vetshadow)',
+        "bufnr": 1,
+        "type": "W",
+        "enum": 2,
+        "error": None,
+        "warning": "warning"
+    }
 
 
 def test_gofmt():

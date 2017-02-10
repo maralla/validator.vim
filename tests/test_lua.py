@@ -16,7 +16,7 @@ def test_luac():
 
 
 def test_luacheck():
-    msg = ["    /tmp/foo.lua:16:1: expected '=' near <eof>"]
+    msg = ["    /tmp/foo.lua:16:1: (E011) expected '=' near <eof>"]
 
     res = LuacheckLint().parse_loclist(msg, 1)
     assert json.loads(res)[0] == {
@@ -25,5 +25,7 @@ def test_luacheck():
         "text": "[luacheck]expected '=' near <eof>",
         "enum": 1,
         "bufnr": 1,
-        "type": "E"
+        "type": "E",
+        "error": "E011",
+        "warning": None
     }
