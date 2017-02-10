@@ -107,7 +107,7 @@ function! s:check()
       let written = v:true
     endif
     let in_io = stdin ? 'pipe' : 'null'
-    let job = job_start(cmd, {"close_cb": s:gen_handler(ft, nr, checker), "in_io": in_io, "err_io": 'out'})
+    let job = job_start(cmd, {"close_cb": s:gen_handler(ft, nr, checker), "in_io": in_io, "err_io": 'out', "stoponexit": ""})
     if stdin
       call s:send_buffer(job, lines)
     endif
