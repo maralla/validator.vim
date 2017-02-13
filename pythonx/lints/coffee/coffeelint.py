@@ -8,7 +8,7 @@ class CoffeeLint(Validator):
 
     stdin = True
     checker = "coffeelint"
-    args = " --stdin --reporter csv"
+    args = "--stdin --reporter csv"
     regex = r"""
             .+?,
             (?P<lnum>\d+),
