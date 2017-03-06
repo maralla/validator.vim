@@ -69,7 +69,7 @@ endfunction
 function! s:send_buffer(job, lines)
   let ch = job_getchannel(a:job)
   if ch_status(ch) == 'open'
-    call ch_sendraw(ch, join(a:lines, "\n"))
+    call ch_sendraw(ch, join(a:lines, "\n") . "\n")
     call ch_close_in(ch)
   endif
 endfunction
