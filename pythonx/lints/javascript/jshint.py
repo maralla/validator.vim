@@ -8,6 +8,7 @@ class Jshint(Validator):
 
     default = True
 
+    stdin = True
     checker = "jshint"
     args = "--verbose"
     regex = r"""
@@ -28,3 +29,8 @@ class Jshint(Validator):
                 (?P<code>\d+)
             \)
             )"""
+    
+    def cmd(self, fname):
+        args = "{} --filename {} -".format(
+            self.cmd_args, self.filename)
+        return ' '.join([self.binary, args])
