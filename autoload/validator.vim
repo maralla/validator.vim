@@ -89,7 +89,10 @@ function! s:check()
 
   let ext = expand('%:e')
   let ext = empty(ext) ? '' : '.'.ext
-  let tmp = s:tempfile.ext
+  let tail = fnamemodify(s:tempfile, ':t')
+  let fname = 'temp'.tail.ext
+  let tmp = fnamemodify(s:tempfile, ':s?'.tail.'$?'.fname.'?')
+  echo tmp
 
   let lines = getline(1, '$')
   if len(lines) == 1 && empty(lines[0])
