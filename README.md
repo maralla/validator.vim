@@ -88,7 +88,7 @@ ValidatorStyleWarningSign
 To show permanently the sign column and prevent annonying behavior when the
 sign column appear and then it disappears.
 
-![Demo](./images/sign.jpg)
+![sign](https://i.imgur.com/nGXEijq.jpg)
 
 ```vim
 let g:validator_permament_sign = 1
@@ -117,11 +117,17 @@ let g:validator_ruby_rubocop_binary = '/Users/maralla/.rvm/gems/ruby-2.3.0/bin/r
 Install
 -------
 
-I recommend to use a plugin manager for installing.
+* [pack](https://github.com/maralla/pack)
 
-If you use [vim-plug](https://github.com/junegunn/vim-plug)
+```bash
+$ pack install maralla/validator.vim
+```
 
-    Plug 'maralla/validator.vim'
+* [vim-plug](https://github.com/junegunn/vim-plug)
+
+```vim
+Plug 'maralla/validator.vim'
+```
 
 Usage
 -----
@@ -142,5 +148,4 @@ let g:validator_debug = 1
 
 The output is logged in plugin installation directory:
 
-e.g. 
-`~/.vim/bundle/validator.vim/pythonx/validator.log`
+e.g.  `/path/to/validator.vim/pythonx/validator.log`
