@@ -32,6 +32,7 @@ Builtin Checkers
 * sh, `sh`, `shellcheck`
 * rst, `rst2pseudoxml`
 * vim, `vint`, `vimlparser`
+* go, `gofmt`, `golint`, `gometalinter`
 
 Configuration
 -------------
