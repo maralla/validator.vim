@@ -9,8 +9,13 @@ import os
 import os.path
 import re
 import vim
+import logging
 
-from .utils import logging, exe_exist
+from .utils import config_logging, exe_exist
+
+
+config_logging()
+logger = logging.getLogger('validator')
 
 
 def _get_type(msg):
@@ -43,12 +48,13 @@ def _read_args(path):
 
 class Meta(type):
     def __init__(cls, name, bases, attrs):
-        if name not in ("Validator", "Base"):
+        if name not in ('Validator', 'Base'):
             Validator._registry[cls.__filetype__][cls.checker] = cls()
 
         return super(Meta, cls).__init__(name, bases, attrs)
 
-Base = Meta("Base", (object,), {})
+
+Base = Meta('Base', (object,), {})
 
 
 class Unusable(object):
@@ -97,7 +103,7 @@ class Validator(Base):
         return ft in self._registry
 
     def parse_loclist(self, loclist, bufnr):
-        logging.warn("parse input = {}".format([self, loclist, bufnr]))
+        logger.info('parse input = %s', [self, loclist, bufnr])
 
         if self.checker not in self._regex_map:
             self._regex_map[self.checker] = re.compile(self.regex, re.VERBOSE)
@@ -110,14 +116,14 @@ class Validator(Base):
 
             loc = g.groupdict()
             loc.update({
-                "enum": i + 1,
-                "bufnr": bufnr,
-                "type": _get_type(loc),
-                "text": "[{}]{}".format(self.checker, loc.get('text', ''))
+                'enum': i + 1,
+                'bufnr': bufnr,
+                'type': _get_type(loc),
+                'text': '[{}]{}'.format(self.checker, loc.get('text', ''))
             })
             lists.append(loc)
 
-        logging.warn("parsed lists = {}".format(lists))
+        logger.info('parsed lists = %s', lists)
         return json.dumps(lists)
 
     def format_cmd(self, fpath):
@@ -125,7 +131,7 @@ class Validator(Base):
             return ''
 
         if not exe_exist(self.binary):
-            logging.warn("{} not exist".format(self.binary))
+            logger.warning('%s not exist', self.binary)
             return ''
 
         return self.cmd(fpath)
@@ -169,6 +175,7 @@ class Validator(Base):
     def cmd(self, fname):
         return "{} {} {}".format(self.binary, self.cmd_args, fname)
 
+
 _validator = Validator()
 
 
@@ -181,10 +188,10 @@ def load_checkers(ft):
 
     if ft not in _validator:
         try:
-            importlib.import_module("lints.{}".format(ft))
+            importlib.import_module('lints.{}'.format(ft))
         except ImportError:
             try:
-                importlib.import_module("validator_{}".format(ft))
+                importlib.import_module('validator_{}'.format(ft))
             except ImportError:
                 _validator._registry[ft] = {}
     checkers = _validator[ft]

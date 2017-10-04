@@ -8,20 +8,27 @@ import os.path
 import platform
 import vim
 
-log_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                        "validator.log")
-logging.basicConfig(filename=log_file, level=logging.INFO,
-                    format="%(asctime)s [%(levelname)s] %(message)s")
-
-logger = logging.getLogger("requests")
-logger.propagate = False
+_dir = os.path.dirname(__file__)
 
 
-class DebugFilter(object):
+def get_vim_var(name):
+    return vim.vars.get('validator_{}'.format(name))
+
+
+class _DebugFilter(object):
     def filter(self, record):
-        return bool(int(vim.vars.get("validator_debug", 0)))
+        return bool(get_vim_var('debug'))
 
-logging.root.addFilter(DebugFilter())
+
+def config_logging():
+    logger = logging.getLogger('validator')
+    logger.setLevel(logging.INFO)
+    handler = logging.FileHandler(os.path.join(os.path.dirname(_dir),
+                                               'validator.log'))
+    fmt = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+    handler.setFormatter(fmt)
+    logger.addHandler(handler)
+    logger.addFilter(_DebugFilter())
 
 
 def exe_exist(program):
