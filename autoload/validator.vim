@@ -92,7 +92,6 @@ function! s:check()
   let tail = fnamemodify(s:tempfile, ':t')
   let fname = 'temp'.tail.ext
   let tmp = fnamemodify(s:tempfile, ':s?'.tail.'$?'.fname.'?')
-  echo tmp
 
   let lines = getline(1, '$')
   if len(lines) == 1 && empty(lines[0])
