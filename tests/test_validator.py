@@ -57,12 +57,12 @@ def test_format_cmd():
 
 
 def test_binary():
-    with mock.patch.object(vim, 'eval', mock.Mock(return_value='')) as e:
-        assert NoName().binary == 'ls'
-    e.assert_called_with('get(g:, "validator_no_name_binary", "")')
+    assert NoName().binary == 'ls'
+    with mock.patch.dict(vim.vars, {'validator_no_name_binary': b'lls'}):
+        assert NoName().binary == 'lls'
 
 
 def test_args():
-    with mock.patch.object(vim, 'eval', mock.Mock(return_value='')) as e:
-        assert NoName().cmd_args == '-a -b -c -d'
-    e.assert_called_with('get(g:, "validator_no_name_args", "")')
+    assert NoName().cmd_args == '-a -b -c -d'
+    with mock.patch.dict(vim.vars, {'validator_no_name_args': b'-l'}):
+        assert NoName().cmd_args == '-l'

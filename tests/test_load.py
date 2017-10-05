@@ -1,3 +1,4 @@
+import mock
 from validator import Validator, load_checkers
 
 
@@ -13,10 +14,10 @@ class Linter2(Validator):
     checker = 'checker2'
 
 
-def test_load_checkers(monkeypatch):
+def test_load_checkers():
     import vim
 
-    monkeypatch.setattr(vim, "eval", lambda x: {"abcd": "linter1"})
-
-    assert isinstance(load_checkers("abcd")['checker1'], Linter1)
-    assert isinstance(load_checkers("linter2")['checker2'], Linter2)
+    with mock.patch.dict(vim.vars, {
+            'validator_filetype_map': {b'abcd': b'linter1'}}):
+        assert isinstance(load_checkers(b'abcd')['checker1'], Linter1)
+    assert isinstance(load_checkers(b'linter2')['checker2'], Linter2)

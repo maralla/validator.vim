@@ -2,12 +2,7 @@ import functools
 import vim
 
 from . import load_checkers
-
-
-def _u(ft):
-    if isinstance(ft, bytes):
-        return ft.decode('utf-8')
-    return ft
+from .utils import to_unicode
 
 
 def _api(func):
@@ -19,13 +14,13 @@ def _api(func):
 
 @_api
 def get_checkers(args):
-    loaded = load_checkers(_u(args['ft']))
-    return [(c.checker, c.format_cmd(_u(args['tmp'])), c.stdin)
+    loaded = load_checkers(args['ft'])
+    return [(c.checker, c.format_cmd(to_unicode(args['tmp'])), c.stdin)
             for c in loaded.values()]
 
 
 @_api
 def parse_loclist(args):
-    linter = load_checkers(_u(args['ft'])).get(_u(args['checker']))
-    msgs = [_u(m) for m in args['msg']]
+    linter = load_checkers(args['ft']).get(to_unicode(args['checker']))
+    msgs = [to_unicode(m) for m in args['msg']]
     return linter.parse_loclist(msgs, args['nr']) if linter else '[]'

@@ -11,7 +11,7 @@ import re
 import vim
 import logging
 
-from .utils import config_logging, exe_exist
+from .utils import config_logging, exe_exist, get_vim_var, to_unicode
 
 
 config_logging()
@@ -93,7 +93,7 @@ class Validator(Base):
     _regex_map = {}
     _cache = {}
     _type_map = {
-        'c': 'cpp'
+        b'c': b'cpp'
     }
 
     def __getitem__(self, ft):
@@ -155,21 +155,21 @@ class Validator(Base):
         name = self.binary_option or '{}_{}'.format(
             self.__filetype__, self.checker)
 
-        return vim.eval(
-            'get(g:, "validator_{}_binary", "")'.format(name)) or self.checker
+        v = get_vim_var('{}_binary'.format(name), b'', unicode=True)
+        return v or self.checker
 
     @property
     def cmd_args(self):
         name = self.args_option or '{}_{}'.format(
             self.__filetype__, self.checker)
 
-        return vim.eval(
-            'get(g:, "validator_{}_args", "")'.format(name)) or self.args
+        v = get_vim_var('{}_args'.format(name), b'', unicode=True)
+        return v or self.args
 
     @property
     def type_map(self):
-        m = vim.eval('get(g:, "validator_filetype_map", {})')
-        self._type_map.update(m)
+        v = get_vim_var('filetype_map', {})
+        self._type_map.update(v)
         return self._type_map
 
     def cmd(self, fname):
@@ -179,13 +179,28 @@ class Validator(Base):
 _validator = Validator()
 
 
+def _get_filters(ft):
+    checkers = get_vim_var('{}_checkers'.format(ft))
+    filters = None
+    if isinstance(checkers, list):
+        filters = []
+        for c in checkers:
+            try:
+                c = to_unicode(c)
+            except Exception:
+                continue
+            filters.append(c)
+    return filters
+
+
 def load_checkers(ft):
+    """
+    :param ft: bytes
+    """
     if not ft:
         return {}
 
-    ft = _validator.type_map.get(ft, ft)
-    filters = vim.eval('get(g:, "validator_{}_checkers")'.format(ft))
-
+    ft = to_unicode(_validator.type_map.get(ft, ft))
     if ft not in _validator:
         try:
             importlib.import_module('lints.{}'.format(ft))
@@ -197,9 +212,10 @@ def load_checkers(ft):
     checkers = _validator[ft]
 
     if not checkers:
-        return checkers
+        return {}
 
-    if not isinstance(filters, list):
+    filters = _get_filters(ft)
+    if filters is None:
         return {k: c for k, c in checkers.items() if c.default} or checkers
 
     return {k: c for k, c in checkers.items() if k in filters}

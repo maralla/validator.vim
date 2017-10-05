@@ -11,8 +11,17 @@ import vim
 _dir = os.path.dirname(__file__)
 
 
-def get_vim_var(name):
-    return vim.vars.get('validator_{}'.format(name))
+def to_unicode(v):
+    if isinstance(v, bytes):
+        v = v.decode('utf-8')
+    return v
+
+
+def get_vim_var(name, default=None, unicode=False):
+    v = vim.vars.get('validator_{}'.format(name), default)
+    if unicode:
+        v = to_unicode(v)
+    return v
 
 
 class _DebugFilter(object):
