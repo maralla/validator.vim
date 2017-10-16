@@ -6,6 +6,7 @@ set cpo&vim
 let s:loclist = []
 let s:tempfile = tempname()
 let s:width = 16
+let s:python_imported = v:false
 
 let s:manager = {'refcount': 0, 'jobs': []}
 
@@ -76,6 +77,11 @@ endfunction
 
 
 function! s:check()
+  if !s:python_imported
+    call validator#utils#setup_python()
+    let s:python_imported = v:true
+  endif
+
   let ft = &filetype
   if  pumvisible() || index(g:validator_ignore, ft) != -1 | return | endif
 
@@ -156,20 +162,14 @@ function! s:on_text_changed()
 endfunction
 
 
-function! s:do_check()
-  call s:stop_timer()
-  call s:check()
-endfunction
-
-
 function! s:install_event_handlers()
     augroup validator
         autocmd!
         autocmd CursorMoved  * call s:on_cursor_move()
         autocmd TextChangedI * call s:on_text_changed()
         autocmd TextChanged  * call s:on_text_changed()
-        autocmd BufReadPost  * call s:do_check()
-        autocmd BufWritePost * call s:do_check()
+        autocmd BufReadPost  * call s:on_text_changed()
+        autocmd BufWritePost * call s:on_text_changed()
     augroup END
 endfunction
 
@@ -197,8 +197,6 @@ function! validator#enable()
         return
     endif
 
-    call validator#utils#setup_python()
-
     command! ValidatorCheck call s:check()
 
     call s:highlight()
@@ -208,8 +206,7 @@ function! validator#enable()
       autocmd BufEnter * exec 'sign define ValidatorEmpty'
       autocmd BufEnter * exec 'exe ":sign place 9999 line=1 name=ValidatorEmpty buffer=".bufnr("")'
     endif
-
-    call s:check()
+    call s:on_text_changed()
 endfunction
 
 
