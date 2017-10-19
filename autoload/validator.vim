@@ -10,14 +10,14 @@ let s:python_imported = v:false
 
 let s:manager = {'refcount': 0, 'jobs': []}
 
-function s:manager.add_job(job)
+function! s:manager.add_job(job)
   if job_status(a:job) == 'run'
     call add(self.jobs, a:job)
     let self.refcount += 1
   endif
 endfunction
 
-function s:manager.reset_jobs()
+function! s:manager.reset_jobs()
   let still_alive = []
   for job in self.jobs
     if job_status(job) == 'run'
@@ -33,7 +33,7 @@ function s:manager.reset_jobs()
   let self.jobs = still_alive
 endfunction
 
-function s:manager.decref()
+function! s:manager.decref()
   let self.refcount -= 1
   if self.refcount <= 0
     let self.refcount = 0
@@ -41,7 +41,7 @@ function s:manager.decref()
 endfunction
 
 
-function s:handle(ch, ft, nr, checker)
+function! s:handle(ch, ft, nr, checker)
   call s:manager.decref()
 
   let msg = []
@@ -61,7 +61,7 @@ endfunction
 
 function! s:clear(nr)
   let s:loclist = []
-  if has_key(g:_sign_map, a:nr)
+  if has_key(g:_validator_sign_map, a:nr)
     call validator#notifier#notify(s:loclist, a:nr)
   endif
 endfunction
@@ -124,7 +124,7 @@ function! s:check()
 endfunction
 
 
-function s:gen_handler(ft, nr, checker)
+function! s:gen_handler(ft, nr, checker)
   return {c->s:handle(c, a:ft, a:nr, a:checker)}
 endfunction
 
@@ -133,11 +133,11 @@ function! s:on_cursor_move()
   let nr = bufnr('')
   let line = line('.')
 
-  if !has_key(g:_sign_map, nr)
+  if !has_key(g:_validator_sign_map, nr)
     return
   endif
 
-  let msg = get(get(g:_sign_map[nr], 'text', {}), line, '')
+  let msg = get(get(g:_validator_sign_map[nr], 'text', {}), line, '')
   let expected = &columns - s:width
   if strwidth(msg) > expected
     let msg = msg[:expected].'...'
@@ -162,15 +162,22 @@ function! s:on_text_changed()
 endfunction
 
 
-function! s:install_event_handlers()
-    augroup validator
-        autocmd!
-        autocmd CursorMoved  * call s:on_cursor_move()
-        autocmd TextChangedI * call s:on_text_changed()
-        autocmd TextChanged  * call s:on_text_changed()
-        autocmd BufReadPost  * call s:on_text_changed()
-        autocmd BufWritePost * call s:on_text_changed()
-    augroup END
+function! validator#enable_events()
+  augroup validator
+    autocmd!
+    autocmd CursorMoved  * call s:on_cursor_move()
+    autocmd TextChangedI * call s:on_text_changed()
+    autocmd TextChanged  * call s:on_text_changed()
+    autocmd BufReadPost  * call s:on_text_changed()
+    autocmd BufWritePost * call s:on_text_changed()
+  augroup END
+endfunction
+
+
+function! validator#disable_events()
+  augroup validator
+    autocmd!
+  augroup END
 endfunction
 
 
@@ -200,7 +207,7 @@ function! validator#enable()
     command! ValidatorCheck call s:check()
 
     call s:highlight()
-    call s:install_event_handlers()
+    call validator#enable_events()
 
     if g:validator_permament_sign
       autocmd BufEnter * exec 'sign define ValidatorEmpty'
@@ -210,9 +217,15 @@ function! validator#enable()
 endfunction
 
 
+function! validator#disable()
+  call validator#disable_events()
+  call validator#notifier#clear()
+endfunction
+
+
 function! validator#get_status_string()
   let nr = bufnr('')
-  let text_map = get(get(g:_sign_map, nr, {}), 'text', {})
+  let text_map = get(get(g:_validator_sign_map, nr, {}), 'text', {})
   let signs = sort(map(keys(text_map), {i,x->str2nr(x)}), {a,b->a==b?0:a>b?1:-1})
   return empty(signs) ? '' : printf(g:validator_error_msg_format, signs[0], len(signs))
 endfunction

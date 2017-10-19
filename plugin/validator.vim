@@ -1,5 +1,7 @@
 " vim: et ts=2 sts=2 sw=2
 
+scriptencoding utf-8
+
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -20,7 +22,7 @@ elseif !(has('python') || has('python3')) || !(has('job') && has('timers') && ha
 endif
 
 
-let g:_sign_map = {}
+let g:_validator_sign_map = {}
 let g:loaded_validator_plugin = 1
 let s:validator_symbol = '∙'
 let s:ignores = ['nerdtree', 'qf', 'unite', 'help', 'text']
@@ -37,10 +39,12 @@ let g:validator_ignore = extend(get(g:, 'validator_ignore', []), s:ignores)
 let g:validator_permament_sign = get(g:, 'validator_permament_sign', 0)
 
 
-augroup validator
-    autocmd!
-    autocmd VimEnter * call validator#enable()
-augroup END
+if get(g:, 'validator_autostart', 1)
+    augroup validator
+        autocmd!
+        autocmd VimEnter * call validator#enable()
+    augroup END
+endif
 
 
 call s:restore_cpo()

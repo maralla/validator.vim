@@ -1,12 +1,20 @@
 let s:sign_id = 0
 
-function! validator#notifier#notify(loclist, bufnr)
-  if !has_key(g:_sign_map, a:bufnr)
-    let g:_sign_map[a:bufnr] = {}
+
+function! s:pop_id(bufnr)
+  if !has_key(g:_validator_sign_map, a:bufnr)
+    let g:_validator_sign_map[a:bufnr] = {'text': {}, 'id': []}
   endif
 
-  let ids = get(g:_sign_map[a:bufnr], 'id', [])
-  let g:_sign_map[a:bufnr] = {'text': {}, 'id': []}
+  let ids = g:_validator_sign_map[a:bufnr].id
+  let g:_validator_sign_map[a:bufnr].text = {}
+  let g:_validator_sign_map[a:bufnr].id = []
+  return ids
+endfunction
+
+
+function! validator#notifier#notify(loclist, bufnr)
+  let ids = s:pop_id(a:bufnr)
 
   let seen = {}
   let lists = []
@@ -23,8 +31,8 @@ function! validator#notifier#notify(loclist, bufnr)
     let type = 'Validator'.subtype.severity
 
     let s:sign_id += 1
-    call add(g:_sign_map[a:bufnr]['id'], s:sign_id)
-    let g:_sign_map[a:bufnr]['text'][lnum] = get(loc, 'text', '')
+    call add(g:_validator_sign_map[a:bufnr].id, s:sign_id)
+    let g:_validator_sign_map[a:bufnr].text[lnum] = get(loc, 'text', '')
     call add(lists, loc)
 
     try
@@ -50,5 +58,14 @@ function! s:clear(bufnr, ids)
       exec 'sign unplace '.id.' buffer='.a:bufnr
     catch /E158/
     endtry
+  endfor
+endfunction
+
+
+function! validator#notifier#clear()
+  let buflist = getbufinfo()
+  for buf in buflist
+    let ids = s:pop_id(buf.bufnr)
+    call s:clear(buf.bufnr, ids)
   endfor
 endfunction
