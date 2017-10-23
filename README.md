@@ -33,6 +33,7 @@ Builtin Checkers
 * rst, `rst2pseudoxml`
 * vim, `vint`, `vimlparser`
 * go, `gofmt`, `golint`, `gometalinter`
+* rust, `cargo check` (not instant)
 
 Configuration
 -------------
