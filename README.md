@@ -5,7 +5,7 @@ Validator
 
 Syntax check framework for vim which checks syntax on the fly asynchronously.
 
-![Demo](http://i.imgur.com/zRm0qTG.gif)
+![Demo](https://i.imgur.com/8mASfwb.gif)
 
 Requirements
 ------------
