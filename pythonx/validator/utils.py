@@ -62,3 +62,14 @@ def exe_exist(program):
         if any(map(is_exe, try_paths)):
             return True
     return False
+
+
+def find_file(file):
+    cwd = os.getcwd()
+    while True:
+        path = os.path.join(cwd, file)
+        if os.path.exists(path):
+            return path
+        if cwd == '/':
+            break
+        cwd = os.path.split(cwd)[0]

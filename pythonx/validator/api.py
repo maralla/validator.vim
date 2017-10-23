@@ -15,8 +15,17 @@ def _api(func):
 @_api
 def get_checkers(args):
     loaded = load_checkers(args['ft'])
-    return [(c.checker, c.format_cmd(to_unicode(args['tmp'])), c.stdin)
-            for c in loaded.values()]
+    checkers = []
+    for c in loaded.values():
+        if args['instant'] and not c.instant:
+            continue
+        checkers.append(vim.Dictionary(
+            checker=c.checker,
+            cwd=c.cwd or '',
+            cmd=c.format_cmd(to_unicode(args['tmp'])),
+            stdin=c.stdin,
+        ))
+    return vim.List(checkers)
 
 
 @_api

@@ -7,7 +7,7 @@ function! validator#utils#setup_python()
 endfunction
 
 
-function! validator#utils#load_checkers(ft, tmp)
+function! validator#utils#load_checkers(ft, tmp, instant)
   exe s:py 'res = validator_api.get_checkers()'
   return s:pyeval('res')
 endfunction

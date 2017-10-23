@@ -5,13 +5,12 @@ from __future__ import absolute_import
 import collections
 import importlib
 import json
-import os
-import os.path
 import re
 import vim
 import logging
 
-from .utils import config_logging, exe_exist, get_vim_var, to_unicode
+from .utils import config_logging, exe_exist, get_vim_var, to_unicode, \
+    find_file
 
 
 config_logging()
@@ -25,17 +24,6 @@ def _get_type(msg):
         return 'W'
 
     return 'E' if msg.get('type', 'error').lower() == 'error' else 'W'
-
-
-def _find(file):
-    cwd = os.getcwd()
-    while True:
-        path = os.path.join(cwd, file)
-        if os.path.exists(path):
-            return path
-        if cwd == '/':
-            break
-        cwd = os.path.split(cwd)[0]
 
 
 def _read_args(path):
@@ -90,6 +78,9 @@ class Validator(Base):
     # binary name for user to specify the path of the checker executable
     binary_option = None
 
+    # Check when text changed.
+    instant = True
+
     _regex_map = {}
     _cache = {}
     _type_map = {
@@ -101,6 +92,14 @@ class Validator(Base):
 
     def __contains__(self, ft):
         return ft in self._registry
+
+    def compose_loc(self, enum, bufnr, buf_type, text):
+        return {
+            'enum': enum,
+            'bufnr': bufnr,
+            'type': buf_type,
+            'text': '[{}]{}'.format(self.checker, text)
+        }
 
     def parse_loclist(self, loclist, bufnr):
         logger.info('parse input = %s', [self, loclist, bufnr])
@@ -115,12 +114,8 @@ class Validator(Base):
                 continue
 
             loc = g.groupdict()
-            loc.update({
-                'enum': i + 1,
-                'bufnr': bufnr,
-                'type': _get_type(loc),
-                'text': '[{}]{}'.format(self.checker, loc.get('text', ''))
-            })
+            loc.update(self.compose_loc(i + 1, bufnr, _get_type(loc),
+                                        loc.get('text', '')))
             lists.append(loc)
 
         logger.info('parsed lists = %s', lists)
@@ -136,10 +131,14 @@ class Validator(Base):
 
         return self.cmd(fpath)
 
+    @property
+    def cwd(self):
+        pass
+
     def parse_arguments(self, file):
         key = '{}-{}-{}'.format(self.__filetype__, self.checker, file)
         if key not in self._cache:
-            path = _find(file)
+            path = find_file(file)
             self._cache[key] = '' if path is None else _read_args(path)
         return self._cache[key]
 

@@ -7,6 +7,7 @@ let s:loclist = []
 let s:tempfile = tempname()
 let s:width = 16
 let s:python_imported = v:false
+let s:tasks = []
 
 let s:manager = {'refcount': 0, 'jobs': []}
 
@@ -76,11 +77,16 @@ function! s:send_buffer(job, lines)
 endfunction
 
 
-function! s:check()
+function! s:import_python()
   if !s:python_imported
     call validator#utils#setup_python()
     let s:python_imported = v:true
   endif
+endfunction
+
+
+function! s:check(instant)
+  call s:import_python()
 
   let ft = &filetype
   if  pumvisible() || index(g:validator_ignore, ft) != -1 | return | endif
@@ -105,18 +111,26 @@ function! s:check()
     return
   endif
 
-  let cmds = validator#utils#load_checkers(ft, tmp)
+  let cmds = validator#utils#load_checkers(ft, tmp, a:instant)
   let written = v:false
 
-  for [checker, cmd, stdin] in cmds
-    if empty(cmd) | continue | endif
-    if !stdin && !written
+  for cmd_spec in cmds
+    if empty(cmd_spec.cmd) | continue | endif
+    if !cmd_spec.stdin && !written
       call writefile(lines, tmp)
       let written = v:true
     endif
-    let in_io = stdin ? 'pipe' : 'null'
-    let job = job_start(cmd, {"close_cb": s:gen_handler(ft, nr, checker), "in_io": in_io, "err_io": 'out', "stoponexit": ""})
-    if stdin
+    let options = {
+          \ "close_cb": s:gen_handler(ft, nr, cmd_spec.checker),
+          \ "in_io": cmd_spec.stdin ? 'pipe' : 'null',
+          \ "err_io": 'out',
+          \ "stoponexit": ""
+          \ }
+    if !empty(cmd_spec.cwd)
+      let options.cwd = cmd_spec.cwd
+    endif
+    let job = job_start(cmd_spec.cmd, options)
+    if cmd_spec.stdin
       call s:send_buffer(job, lines)
     endif
     call s:manager.add_job(job)
@@ -146,19 +160,34 @@ function! s:on_cursor_move()
 endfunction
 
 
-function! s:stop_timer()
-  if exists('s:timer')
-    let info = timer_info(s:timer)
-    if !empty(info)
-      call timer_stop(s:timer)
+function! s:do_check()
+  let instant = v:false
+  for t in s:tasks
+    if t.event != 'text_changed' && t.event != 'text_changed_i'
+      let instant = v:false
+      break
     endif
+    let instant = v:true
+  endfor
+  if !empty(s:tasks)
+    call s:check(instant)
   endif
+  let s:tasks = []
 endfunction
 
 
-function! s:on_text_changed()
-  call s:stop_timer()
-  let s:timer = timer_start(800, {t->s:check()})
+function! s:add_task(event, instant)
+  call add(s:tasks, {'event': a:event, 'instant': a:instant})
+  let scheduled = v:false
+  if exists('s:timer')
+    let info = timer_info(s:timer)
+    if !empty(info)
+      let scheduled = v:true
+    endif
+  endif
+  if !scheduled
+    let s:timer = timer_start(800, {t->s:do_check()})
+  endif
 endfunction
 
 
@@ -166,10 +195,10 @@ function! validator#enable_events()
   augroup validator
     autocmd!
     autocmd CursorMoved  * call s:on_cursor_move()
-    autocmd TextChangedI * call s:on_text_changed()
-    autocmd TextChanged  * call s:on_text_changed()
-    autocmd BufReadPost  * call s:on_text_changed()
-    autocmd BufWritePost * call s:on_text_changed()
+    autocmd TextChangedI * call s:add_task('text_changed_i', v:true)
+    autocmd TextChanged  * call s:add_task('text_changed', v:true)
+    autocmd BufReadPost  * call s:add_task('read_post', v:false)
+    autocmd BufWritePost * call s:add_task('write_post', v:false)
   augroup END
 endfunction
 
@@ -213,7 +242,7 @@ function! validator#enable()
       autocmd BufEnter * exec 'sign define ValidatorEmpty'
       autocmd BufEnter * exec 'exe ":sign place 9999 line=1 name=ValidatorEmpty buffer=".bufnr("")'
     endif
-    call s:on_text_changed()
+    call s:add_task('init', v:false)
 endfunction
 
 
