@@ -26,11 +26,18 @@ class Cargo(Validator):
         logger.info('parse input = %s', [self, loclist, bufnr])
         lists = []
         j = 0
+        cwd = self.cwd
         for i, l in enumerate(loclist):
             r = PAT.match(l)
             if r:
                 j += 1
                 msg = r.groupdict()
+                fname = msg.get('fname')
+                if not fname:
+                    continue
+                path = os.path.join(cwd, fname)
+                if path != self.filename:
+                    continue
                 text = loclist[i - 1] if i > 0 else ''
                 ty = 'E' if text.startswith('error') else 'W'
                 loc = self.compose_loc(j, bufnr, ty, text)
