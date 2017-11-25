@@ -151,12 +151,20 @@ function! s:on_cursor_move()
     return
   endif
 
-  let msg = get(get(g:_validator_sign_map[nr], 'text', {}), line, '')
+  let info = get(get(g:_validator_sign_map[nr], 'text', {}), line, {})
+  let msg = get(info, 'msg', '')
+  let hi_type = get(info, 'type', 'NONE')
   let expected = &columns - s:width
   if strwidth(msg) > expected
     let msg = msg[:expected].'...'
   endif
+  if g:validator_highlight_message
+    exe 'echohl ' . hi_type
+  endif
   echo msg
+  if g:validator_highlight_message
+    echohl NONE
+  endif
 endfunction
 
 
@@ -216,8 +224,8 @@ endfunction
 
 
 function! s:highlight()
-  hi default ValidatorErrorSign ctermfg=88 ctermbg=235
-  hi default ValidatorWarningSign ctermfg=3 ctermbg=235
+  hi default link ValidatorErrorSign Error
+  hi default link ValidatorWarningSign Exception
   hi default link ValidatorStyleErrorSign ValidatorErrorSign
   hi default link ValidatorStyleWarningSign ValidatorWarningSign
 

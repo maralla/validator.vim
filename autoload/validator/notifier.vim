@@ -28,11 +28,12 @@ function! validator#notifier#notify(loclist, bufnr)
 
     let severity = get(loc, 'type', '') ==? 'W' ? 'Warning' : 'Error'
     let subtype = get(loc, 'subtype', '')
+    let msg = get(loc, 'text', '')
     let type = 'Validator'.subtype.severity
 
     let s:sign_id += 1
     call add(g:_validator_sign_map[a:bufnr].id, s:sign_id)
-    let g:_validator_sign_map[a:bufnr].text[lnum] = get(loc, 'text', '')
+    let g:_validator_sign_map[a:bufnr].text[lnum] = {'msg': msg, 'type': type.'Sign'}
     call add(lists, loc)
 
     try
