@@ -179,16 +179,25 @@ _validator = Validator()
 
 
 def _get_filters(ft):
+    """
+    :param ft: unicode
+    """
     checkers = get_vim_var('{}_checkers'.format(ft))
     filters = None
-    if isinstance(checkers, list):
+    if isinstance(checkers, (list, vim.List)):
         filters = []
         for c in checkers:
             try:
                 c = to_unicode(c)
-            except Exception:
+            except Exception as e:
+                logger.exception(e)
                 continue
             filters.append(c)
+    else:
+        try:
+            filters = [to_unicode(checkers)]
+        except Exception as e:
+            logger.exception(e)
     return filters
 
 
