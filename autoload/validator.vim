@@ -7,9 +7,10 @@ let s:loclist = []
 let s:tempfile = tempname()
 let s:width = 16
 let s:python_imported = v:false
-let s:tasks = []
+let s:events = {}
 
 let s:manager = {'refcount': 0, 'jobs': []}
+
 
 function! s:manager.add_job(job)
   if job_status(a:job) == 'run'
@@ -169,31 +170,20 @@ endfunction
 
 
 function! s:do_check()
-  let instant = v:false
-  for t in s:tasks
-    if t.event != 'text_changed' && t.event != 'text_changed_i'
-      let instant = v:false
-      break
+  let instant = has_key(s:events, 'text_changed') || has_key(s:events, 'text_changed_i')
+  try
+    if !empty(s:events)
+      call s:check(instant)
     endif
-    let instant = v:true
-  endfor
-  if !empty(s:tasks)
-    call s:check(instant)
-  endif
-  let s:tasks = []
+  finally
+    let s:events = {}
+  endtry
 endfunction
 
 
-function! s:add_task(event, instant)
-  call add(s:tasks, {'event': a:event, 'instant': a:instant})
-  let scheduled = v:false
-  if exists('s:timer')
-    let info = timer_info(s:timer)
-    if !empty(info)
-      let scheduled = v:true
-    endif
-  endif
-  if !scheduled
+function! s:add_task(event)
+  let s:events[a:event] = v:true
+  if !exists('s:timer') || empty(timer_info(s:timer))
     let s:timer = timer_start(800, {t->s:do_check()})
   endif
 endfunction
@@ -203,10 +193,10 @@ function! validator#enable_events()
   augroup validator
     autocmd!
     autocmd CursorMoved  * call s:on_cursor_move()
-    autocmd TextChangedI * call s:add_task('text_changed_i', v:true)
-    autocmd TextChanged  * call s:add_task('text_changed', v:true)
-    autocmd BufReadPost  * call s:add_task('read_post', v:false)
-    autocmd BufWritePost * call s:add_task('write_post', v:false)
+    autocmd TextChangedI * call s:add_task('text_changed_i')
+    autocmd TextChanged  * call s:add_task('text_changed')
+    autocmd BufReadPost  * call s:add_task('read_post')
+    autocmd BufWritePost * call s:add_task('write_post')
   augroup END
 endfunction
 
@@ -250,7 +240,7 @@ function! validator#enable()
       autocmd BufEnter * exec 'sign define ValidatorEmpty'
       autocmd BufEnter * exec 'exe ":sign place 9999 line=1 name=ValidatorEmpty buffer=".bufnr("")'
     endif
-    call s:add_task('init', v:false)
+    call s:add_task('init')
 endfunction
 
 
