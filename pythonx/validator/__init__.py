@@ -195,7 +195,7 @@ def _get_filters(ft):
                 logger.exception(e)
                 continue
             filters.append(c)
-    else:
+    elif checkers:
         try:
             filters = [to_unicode(checkers)]
         except Exception as e:

@@ -12,6 +12,7 @@ def _eval(v):
     return eval_map.get(v, 0)
 
 vim = types.ModuleType('vim')
+vim.List = list
 vim.eval = _eval
 vim.vars = {}
 vim.current = mock.Mock()
