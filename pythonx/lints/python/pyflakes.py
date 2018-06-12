@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import re
 from validator import Validator
+
+
+LIB_PATTERN = re.compile('/lib/python(\d(\.\d)?)?/site-packages/')
 
 
 class PyFlakes(Validator):
@@ -21,3 +25,7 @@ class PyFlakes(Validator):
             \s
             (?P<text>.*)
             """
+
+    @property
+    def enabled(self):
+        return not bool(LIB_PATTERN.search(self.filename))

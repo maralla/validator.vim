@@ -87,6 +87,8 @@ class Validator(Base):
         b'c': b'cpp'
     }
 
+    enabled = True
+
     def __getitem__(self, ft):
         return self._registry.get(ft, {})
 
@@ -122,7 +124,7 @@ class Validator(Base):
         return json.dumps(lists)
 
     def format_cmd(self, fpath):
-        if not self.filter(fpath):
+        if not self.enabled or not self.filter(fpath):
             return ''
 
         if not exe_exist(self.binary):

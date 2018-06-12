@@ -86,11 +86,18 @@ function! s:import_python()
 endfunction
 
 
+function! s:ignore(ft)
+  return pumvisible() || !empty(&buftype) || index(g:validator_ignore, a:ft) != -1
+endfunction
+
+
 function! s:check(instant)
   call s:import_python()
 
   let ft = &filetype
-  if  pumvisible() || index(g:validator_ignore, ft) != -1 | return | endif
+  if s:ignore(ft)
+    return
+  endif
 
   let nr = bufnr('')
   if empty(ft)
@@ -231,7 +238,7 @@ function! validator#enable()
         return
     endif
 
-    command! ValidatorCheck call s:check()
+    command! ValidatorCheck call s:check(v:false)
 
     call s:highlight()
     call validator#enable_events()
