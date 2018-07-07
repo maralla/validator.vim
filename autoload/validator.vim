@@ -110,7 +110,7 @@ function! s:check(instant)
   let ext = expand('%:e')
   let ext = empty(ext) ? '' : '.'.ext
   let tail = fnamemodify(s:tempfile, ':t')
-  let fname = 'temp'.tail.ext
+  let fname = 'temp__validator'.ext
   let tmp = fnamemodify(s:tempfile, ':s?'.tail.'$?'.fname.'?')
 
   let lines = getline(1, '$')
