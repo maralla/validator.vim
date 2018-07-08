@@ -13,7 +13,7 @@ let s:manager = {'refcount': 0, 'jobs': []}
 
 
 function! s:manager.add_job(job)
-  if job_status(a:job) == 'run'
+  if job_status(a:job) ==# 'run'
     call add(self.jobs, a:job)
     let self.refcount += 1
   endif
@@ -22,10 +22,10 @@ endfunction
 function! s:manager.reset_jobs()
   let still_alive = []
   for job in self.jobs
-    if job_status(job) == 'run'
+    if job_status(job) ==# 'run'
       call job_stop(job)
       " recheck
-      if job_status(job) == 'run'
+      if job_status(job) ==# 'run'
         call add(still_alive, job)
       else
         call self.decref()
@@ -47,7 +47,7 @@ function! s:handle(ch, ft, nr, checker)
   call s:manager.decref()
 
   let msg = []
-  while ch_status(a:ch) == 'buffered'
+  while ch_status(a:ch) ==# 'buffered'
     call add(msg, ch_read(a:ch))
   endwhile
 
@@ -71,7 +71,7 @@ endfunction
 
 function! s:send_buffer(job, lines)
   let ch = job_getchannel(a:job)
-  if ch_status(ch) == 'open'
+  if ch_status(ch) ==# 'open'
     call ch_sendraw(ch, join(a:lines, "\n"))
     call ch_close_in(ch)
   endif
@@ -87,13 +87,13 @@ endfunction
 
 
 function! s:ignore(ft)
-  return pumvisible() || !empty(&buftype) || index(g:validator_ignore, a:ft) != -1
+  return pumvisible() || !empty(&buftype)
+        \ || index(g:validator_ignore, a:ft) != -1
+        \ || &readonly
 endfunction
 
 
 function! s:check(instant)
-  call s:import_python()
-
   let ft = &filetype
   if s:ignore(ft)
     return
@@ -129,10 +129,10 @@ function! s:check(instant)
       let written = v:true
     endif
     let options = {
-          \ "close_cb": s:gen_handler(ft, nr, cmd_spec.checker),
-          \ "in_io": cmd_spec.stdin ? 'pipe' : 'null',
-          \ "err_io": 'out',
-          \ "stoponexit": ""
+          \ 'close_cb': s:gen_handler(ft, nr, cmd_spec.checker),
+          \ 'in_io': cmd_spec.stdin ? 'pipe' : 'null',
+          \ 'err_io': 'out',
+          \ 'stoponexit': ''
           \ }
     if !empty(cmd_spec.cwd)
       let options.cwd = cmd_spec.cwd
@@ -204,6 +204,10 @@ function! validator#enable_events()
     autocmd TextChanged  * call s:add_task('text_changed')
     autocmd BufReadPost  * call s:add_task('read_post')
     autocmd BufWritePost * call s:add_task('write_post')
+    if g:validator_permament_sign
+      autocmd BufEnter * exec 'sign define ValidatorEmpty'
+      autocmd BufEnter * exec 'exe ":sign place 9999 line=1 name=ValidatorEmpty buffer=".bufnr("")'
+    endif
   augroup END
 endfunction
 
@@ -240,13 +244,10 @@ function! validator#enable()
 
     command! ValidatorCheck call s:check(v:false)
 
+    call s:import_python()
     call s:highlight()
     call validator#enable_events()
 
-    if g:validator_permament_sign
-      autocmd BufEnter * exec 'sign define ValidatorEmpty'
-      autocmd BufEnter * exec 'exe ":sign place 9999 line=1 name=ValidatorEmpty buffer=".bufnr("")'
-    endif
     call s:add_task('init')
 endfunction
 
