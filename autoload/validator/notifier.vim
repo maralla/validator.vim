@@ -1,4 +1,4 @@
-let s:sign_id = 0
+let s:sign_id = 0x1000
 
 
 function! s:pop_id(bufnr)
