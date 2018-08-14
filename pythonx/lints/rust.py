@@ -51,4 +51,5 @@ class Cargo(Validator):
 
     @property
     def cwd(self):
-        return os.path.dirname(find_file('Cargo.toml'))
+        path = find_file('Cargo.toml')
+        return os.path.dirname(path) if path else os.getcwd()
