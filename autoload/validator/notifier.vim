@@ -13,6 +13,11 @@ function! s:pop_id(bufnr)
 endfunction
 
 
+function! s:hl_position(lnum, col)
+  return matchadd('ValidatorPosition', '\%'.a:lnum.'l\%'.a:col.'v')
+endfunction
+
+
 function! validator#notifier#notify(loclist, bufnr)
   let ids = s:pop_id(a:bufnr)
 
@@ -29,10 +34,12 @@ function! validator#notifier#notify(loclist, bufnr)
     let severity = get(loc, 'type', '') ==? 'W' ? 'Warning' : 'Error'
     let subtype = get(loc, 'subtype', '')
     let msg = get(loc, 'text', '')
+    let col = get(loc, 'col', -1)
     let type = 'Validator'.subtype.severity
 
     let s:sign_id += 1
-    call add(g:_validator_sign_map[a:bufnr].id, s:sign_id)
+    let hl_id = col != -1 ? s:hl_position(lnum, col) : -1
+    call add(g:_validator_sign_map[a:bufnr].id, [s:sign_id, hl_id])
     let g:_validator_sign_map[a:bufnr].text[lnum] = {'msg': msg, 'type': type.'Sign'}
     call add(lists, loc)
 
@@ -54,11 +61,14 @@ endfunction
 
 
 function! s:clear(bufnr, ids)
-  for id in a:ids
+  for [id, hl_id] in a:ids
     try
       exec 'sign unplace '.id.' buffer='.a:bufnr
     catch /E158/
     endtry
+    if hl_id != -1
+      call matchdelete(hl_id)
+    endif
   endfor
 endfunction
 

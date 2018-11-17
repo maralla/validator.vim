@@ -229,6 +229,7 @@ function! s:highlight()
   hi default link ValidatorWarningSign Exception
   hi default link ValidatorStyleErrorSign ValidatorErrorSign
   hi default link ValidatorStyleWarningSign ValidatorWarningSign
+  hi ValidatorPosition ctermfg=160 guifg=#dc322f cterm=underline
 
   call s:define_sign('Error', g:validator_error_symbol)
   call s:define_sign('Warning', g:validator_warning_symbol)

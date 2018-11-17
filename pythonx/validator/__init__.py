@@ -95,8 +95,9 @@ class Validator(Base):
     def __contains__(self, ft):
         return ft in self._registry
 
-    def compose_loc(self, enum, bufnr, buf_type, text):
+    def compose_loc(self, enum, bufnr, buf_type, text, col):
         return {
+            'col': col,
             'enum': enum,
             'bufnr': bufnr,
             'type': buf_type,
@@ -116,8 +117,9 @@ class Validator(Base):
                 continue
 
             loc = g.groupdict()
+            col = loc.get('col', -1) if self.instant else -1
             loc.update(self.compose_loc(i + 1, bufnr, _get_type(loc),
-                                        loc.get('text', '')))
+                                        loc.get('text', ''), col))
             lists.append(loc)
 
         logger.info('parsed lists = %s', lists)
