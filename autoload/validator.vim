@@ -8,6 +8,7 @@ let s:tempfile = tempname()
 let s:width = 16
 let s:python_imported = v:false
 let s:events = {}
+let s:cursor_move_timer = -1
 
 let s:manager = {'refcount': 0, 'jobs': []}
 
@@ -151,7 +152,7 @@ function! s:gen_handler(ft, nr, checker)
 endfunction
 
 
-function! s:on_cursor_move()
+function! s:_show_lint_message()
   let nr = bufnr('')
   let line = line('.')
 
@@ -173,6 +174,14 @@ function! s:on_cursor_move()
   if g:validator_highlight_message
     echohl NONE
   endif
+endfunction
+
+
+function! s:on_cursor_move()
+  if s:cursor_move_timer != -1
+    call timer_stop(s:cursor_move_timer)
+  endif
+  let s:cursor_move_timer = timer_start(200, {t->s:_show_lint_message()})
 endfunction
 
 
