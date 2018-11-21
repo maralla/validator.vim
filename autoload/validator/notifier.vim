@@ -67,7 +67,10 @@ function! s:clear(bufnr, ids)
     catch /E158/
     endtry
     if hl_id != -1
-      call matchdelete(hl_id)
+      try
+        call matchdelete(hl_id)
+      catch /E803\|E802/
+      endtry
     endif
   endfor
 endfunction
