@@ -14,7 +14,10 @@ endfunction
 
 
 function! s:hl_position(lnum, col)
-  return matchadd('ValidatorPosition', '\%'.a:lnum.'l\%'.a:col.'v')
+  if get(g:, 'validator_enable_error_position_hightlight', 0)
+    return matchadd('ValidatorPosition', '\%'.a:lnum.'l\%'.a:col.'v')
+  endif
+  return -1
 endfunction
 
 
