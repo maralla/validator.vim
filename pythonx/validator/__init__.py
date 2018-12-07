@@ -95,7 +95,7 @@ class Validator(Base):
     def __contains__(self, ft):
         return ft in self._registry
 
-    def compose_loc(self, enum, bufnr, buf_type, text, col):
+    def compose_loc(self, enum, bufnr, buf_type, text, col=-1):
         return {
             'col': col,
             'enum': enum,
