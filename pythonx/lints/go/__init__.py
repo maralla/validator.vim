@@ -3,3 +3,4 @@
 from .golint import GolintLint  # noqa
 from .gofmt import GoFmtLint  # noqa
 from .gometalinter import Gometalinter  # noqa
+from .golangci import Golangci  # noqa
