@@ -9,6 +9,8 @@ let s:width = 16
 let s:python_imported = v:false
 let s:events = {}
 let s:cursor_move_timer = -1
+let s:lint_popup = -1
+let s:lint_line = -1
 
 let s:manager = {'refcount': 0, 'jobs': []}
 
@@ -162,26 +164,52 @@ function! s:_show_lint_message()
 
   let info = get(get(g:_validator_sign_map[nr], 'text', {}), line, {})
   let msg = get(info, 'msg', '')
-  let hi_type = get(info, 'type', 'NONE')
-  let expected = &columns - s:width
-  if strwidth(msg) > expected
-    let msg = msg[:expected].'...'
+  if !empty(msg)
+    let length = strlen(getline('.')[col('.'):])
+    let s:lint_popup = popup_create(msg, #{
+          \ line: 'cursor+1',
+          \ col: 'cursor+'.length,
+          \ })
+    let s:lint_line = line
   endif
-  if g:validator_highlight_message
-    exe 'echohl ' . hi_type
-  endif
-  echo msg
-  if g:validator_highlight_message
-    echohl NONE
-  endif
+  " let hi_type = get(info, 'type', 'NONE')
+  " let expected = &columns - s:width
+  " if strwidth(msg) > expected
+  "   let msg = msg[:expected].'...'
+  " endif
+  " if g:validator_highlight_message
+  "   exe 'echohl ' . hi_type
+  " endif
+  " echo msg
+  " if g:validator_highlight_message
+  "   echohl NONE
+  " endif
 endfunction
 
 
 function! s:on_cursor_move()
+  if line('.') == s:lint_line
+    return
+  endif
+  if s:lint_popup != -1
+    call popup_close(s:lint_popup)
+    let s:lint_popup = -1
+    let s:lint_line = -1
+  endif
+
   if s:cursor_move_timer != -1
     call timer_stop(s:cursor_move_timer)
   endif
   let s:cursor_move_timer = timer_start(200, {t->s:_show_lint_message()})
+endfunction
+
+
+function! s:on_cursor_movei()
+  if s:lint_popup != -1
+    call popup_close(s:lint_popup)
+    let s:lint_popup = -1
+    let s:lint_line = -1
+  endif
 endfunction
 
 
@@ -209,6 +237,7 @@ function! validator#enable_events()
   augroup validator
     autocmd!
     autocmd CursorMoved  * call s:on_cursor_move()
+    autocmd CursorMovedI  * call s:on_cursor_movei()
     autocmd TextChangedI * call s:add_task('text_changed_i')
     autocmd TextChanged  * call s:add_task('text_changed')
     autocmd BufReadPost  * call s:add_task('read_post')
