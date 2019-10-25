@@ -154,6 +154,44 @@ function! s:gen_handler(ft, nr, checker)
 endfunction
 
 
+function! s:show_in_popup(msg, line)
+  if empty(a:msg)
+    return
+  endif
+  let length = strdisplaywidth(getline('.')[:col('.')]) - 4
+  if length < 0
+    let length = 0
+  endif
+  let s:lint_popup = popup_create(a:msg, #{
+        \ line: 'cursor+1',
+        \ col: 'cursor-'.length,
+        \ highlight: 'ValidatorPopupColor',
+        \ border: [1, 2, 1, 2],
+        \ borderhighlight: ['ValidatorBorderColor'],
+        \ padding: [0, 1, 0, 1],
+        \ borderchars: ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
+        \ })
+  let s:lint_line = a:line
+endfunction
+
+
+function! s:show_in_status(info, msg)
+  let hi_type = get(a:info, 'type', 'NONE')
+  let expected = &columns - s:width
+  let msg = a:msg
+  if strwidth(msg) > expected
+    let msg = msg[:expected].'...'
+  endif
+  if g:validator_highlight_message
+    exe 'echohl ' . hi_type
+  endif
+  echo msg
+  if g:validator_highlight_message
+    echohl NONE
+  endif
+endfunction
+
+
 function! s:_show_lint_message()
   let nr = bufnr('')
   let line = line('.')
@@ -164,37 +202,29 @@ function! s:_show_lint_message()
 
   let info = get(get(g:_validator_sign_map[nr], 'text', {}), line, {})
   let msg = get(info, 'msg', '')
-  if !empty(msg)
-    let length = strlen(getline('.')[col('.'):])
-    let s:lint_popup = popup_create(msg, #{
-          \ line: 'cursor+1',
-          \ col: 'cursor+'.length,
-          \ })
-    let s:lint_line = line
+  if s:support_popup()
+    call s:show_in_popup(msg, line)
+  else
+    call s:show_in_status(info, msg)
   endif
-  " let hi_type = get(info, 'type', 'NONE')
-  " let expected = &columns - s:width
-  " if strwidth(msg) > expected
-  "   let msg = msg[:expected].'...'
-  " endif
-  " if g:validator_highlight_message
-  "   exe 'echohl ' . hi_type
-  " endif
-  " echo msg
-  " if g:validator_highlight_message
-  "   echohl NONE
-  " endif
 endfunction
 
 
+func s:support_popup()
+  return g:validator_use_popup_window && exists('*popup_create')
+endfunc
+
+
 function! s:on_cursor_move()
-  if line('.') == s:lint_line
-    return
-  endif
-  if s:lint_popup != -1
-    call popup_close(s:lint_popup)
-    let s:lint_popup = -1
-    let s:lint_line = -1
+  if s:support_popup()
+    if line('.') == s:lint_line
+      return
+    endif
+    if s:lint_popup != -1
+      call popup_close(s:lint_popup)
+      let s:lint_popup = -1
+      let s:lint_line = -1
+    endif
   endif
 
   if s:cursor_move_timer != -1
@@ -205,6 +235,9 @@ endfunction
 
 
 function! s:on_cursor_movei()
+  if !s:support_popup()
+    return
+  endif
   if s:lint_popup != -1
     call popup_close(s:lint_popup)
     let s:lint_popup = -1
