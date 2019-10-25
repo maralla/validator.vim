@@ -38,6 +38,7 @@ let g:validator_filetype_map = get(g:, 'validator_filetype_map', {})
 let g:validator_ignore = extend(get(g:, 'validator_ignore', []), s:ignores)
 let g:validator_permament_sign = get(g:, 'validator_permament_sign', 0)
 let g:validator_highlight_message = get(g:, 'validator_highlight_message', 0)
+let g:validator_use_popup_window = get(g:, 'validator_use_popup_window', 0)
 
 
 if get(g:, 'validator_autostart', 1)

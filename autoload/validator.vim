@@ -9,6 +9,8 @@ let s:width = 16
 let s:python_imported = v:false
 let s:events = {}
 let s:cursor_move_timer = -1
+let s:lint_popup = -1
+let s:lint_line = -1
 
 let s:manager = {'refcount': 0, 'jobs': []}
 
@@ -152,18 +154,31 @@ function! s:gen_handler(ft, nr, checker)
 endfunction
 
 
-function! s:_show_lint_message()
-  let nr = bufnr('')
-  let line = line('.')
-
-  if !has_key(g:_validator_sign_map, nr)
+function! s:show_in_popup(msg, line)
+  if empty(a:msg)
     return
   endif
+  let length = strdisplaywidth(getline('.')[:col('.')]) - 4
+  if length < 0
+    let length = 0
+  endif
+  let s:lint_popup = popup_create(a:msg, #{
+        \ line: 'cursor+1',
+        \ col: 'cursor-'.length,
+        \ highlight: 'ValidatorPopupColor',
+        \ border: [1, 2, 1, 2],
+        \ borderhighlight: ['ValidatorBorderColor'],
+        \ padding: [0, 1, 0, 1],
+        \ borderchars: ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
+        \ })
+  let s:lint_line = a:line
+endfunction
 
-  let info = get(get(g:_validator_sign_map[nr], 'text', {}), line, {})
-  let msg = get(info, 'msg', '')
-  let hi_type = get(info, 'type', 'NONE')
+
+function! s:show_in_status(info, msg)
+  let hi_type = get(a:info, 'type', 'NONE')
   let expected = &columns - s:width
+  let msg = a:msg
   if strwidth(msg) > expected
     let msg = msg[:expected].'...'
   endif
@@ -177,11 +192,57 @@ function! s:_show_lint_message()
 endfunction
 
 
+function! s:_show_lint_message()
+  let nr = bufnr('')
+  let line = line('.')
+
+  if !has_key(g:_validator_sign_map, nr)
+    return
+  endif
+
+  let info = get(get(g:_validator_sign_map[nr], 'text', {}), line, {})
+  let msg = get(info, 'msg', '')
+  if s:support_popup()
+    call s:show_in_popup(msg, line)
+  else
+    call s:show_in_status(info, msg)
+  endif
+endfunction
+
+
+func s:support_popup()
+  return g:validator_use_popup_window && exists('*popup_create')
+endfunc
+
+
 function! s:on_cursor_move()
+  if s:support_popup()
+    if line('.') == s:lint_line
+      return
+    endif
+    if s:lint_popup != -1
+      call popup_close(s:lint_popup)
+      let s:lint_popup = -1
+      let s:lint_line = -1
+    endif
+  endif
+
   if s:cursor_move_timer != -1
     call timer_stop(s:cursor_move_timer)
   endif
   let s:cursor_move_timer = timer_start(200, {t->s:_show_lint_message()})
+endfunction
+
+
+function! s:on_cursor_movei()
+  if !s:support_popup()
+    return
+  endif
+  if s:lint_popup != -1
+    call popup_close(s:lint_popup)
+    let s:lint_popup = -1
+    let s:lint_line = -1
+  endif
 endfunction
 
 
@@ -209,6 +270,7 @@ function! validator#enable_events()
   augroup validator
     autocmd!
     autocmd CursorMoved  * call s:on_cursor_move()
+    autocmd CursorMovedI  * call s:on_cursor_movei()
     autocmd TextChangedI * call s:add_task('text_changed_i')
     autocmd TextChanged  * call s:add_task('text_changed')
     autocmd BufReadPost  * call s:add_task('read_post')
