@@ -117,7 +117,7 @@ class Validator(Base):
                 continue
 
             loc = g.groupdict()
-            col = loc.get('col', -1) if self.instant else -1
+            col = loc.get('col', -1)
             loc.update(self.compose_loc(i + 1, bufnr, _get_type(loc),
                                         loc.get('text', ''), col))
             lists.append(loc)

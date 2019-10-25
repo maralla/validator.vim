@@ -11,6 +11,7 @@ def test_rst2pseudoxml_severe_dot_regex():
     assert json.loads(res)[0] == {
         "lnum": "355",
         "bufnr": 1,
+        "col": -1,
         "enum": 1,
         "text": u'[rst2pseudoxml.py]Unexpected section title or transition.',
         "type": "E",
@@ -27,6 +28,7 @@ def test_rst2pseudoxml_severe_colon_regex():
     res = RST2PseudoXMLLint().parse_loclist(msg, 1)
     assert json.loads(res)[0] == {
         "lnum": "123",
+        "col": -1,
         "bufnr": 1,
         "enum": 1,
         "text": u'[rst2pseudoxml.py]Unexpected section title or transition:',
@@ -45,6 +47,7 @@ def test_rst2pseudoxml_warning_regex():
     assert json.loads(res)[0] == {
         "lnum": "251",
         "bufnr": 1,
+        "col": -1,
         "enum": 1,
         "text": u'[rst2pseudoxml.py]Title level inconsistent.',
         "type": "W",

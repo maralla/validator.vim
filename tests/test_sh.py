@@ -11,6 +11,7 @@ def test_regex():
     assert json.loads(res)[0] == {
         "lnum": "10",
         "text": "[sh]syntax error: unexpected end of file",
+        "col": -1,
         "enum": 1,
         "type": "E",
         "bufnr": 1

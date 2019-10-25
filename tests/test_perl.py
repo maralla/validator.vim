@@ -9,6 +9,7 @@ def test_perl():
     assert json.loads(res)[0] == {
         "lnum": "26",
         "text": "[perl]Missing $ on loop variable at bin/foo line 26.",
+        "col": -1,
         "enum": 1,
         "type": "E",
         "bufnr": 1

@@ -10,6 +10,7 @@ def test_ruby():
     res = Ruby().parse_loclist(msg, 1)
     assert json.loads(res)[0] == {
         "lnum": "50",
+        "col": -1,
         "bufnr": 1,
         "enum": 1,
         "text": '[ruby]syntax error, unexpected end-of-input, expecting keyword_end',

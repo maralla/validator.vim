@@ -8,6 +8,7 @@ def test_luac():
     res = LuaCLint().parse_loclist(msg, 1)
     assert json.loads(res)[0] == {
         "lnum": "16",
+        "col": -1,
         "text": "[luac]syntax error near <eof>",
         "enum": 1,
         "bufnr": 1,
