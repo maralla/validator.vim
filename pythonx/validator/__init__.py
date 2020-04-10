@@ -26,6 +26,10 @@ def _get_type(msg):
     return 'E' if msg.get('type', 'error').lower() == 'error' else 'W'
 
 
+def get_type(msg):
+    return _get_type(msg)
+
+
 def _read_args(path):
     try:
         with open(path) as f:
