@@ -337,5 +337,30 @@ function! validator#get_status_string()
   return empty(signs) ? '' : printf(g:validator_error_msg_format, signs[0], len(signs))
 endfunction
 
+
+function! validator#next()
+  let nr = bufnr('')
+  let items = get(g:_validator_sign_map[nr], 'text', {})
+  let items = sort(map(keys(items), {k,v -> str2nr(v)}), 'N')
+
+  if empty(items)
+    return
+  endif
+
+  let current_line = line('.')
+
+  if items[-1] <= current_line
+    let current_line = 0
+  endif
+
+  for l in items
+    if l > current_line
+      call cursor(l, 1)
+      return
+    endif
+  endfor
+endfunction
+
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
