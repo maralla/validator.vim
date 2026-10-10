@@ -10,7 +10,7 @@ from validator import Validator
 from validator.utils import find_file
 
 
-PAT = re.compile('\s+-->\s(?P<fname>.*?):(?P<lnum>\d+):(?P<col>\d+)')
+PAT = re.compile(r'\s+-->\s(?P<fname>.*?):(?P<lnum>\d+):(?P<col>\d+)')
 
 logger = logging.getLogger('validator')
 

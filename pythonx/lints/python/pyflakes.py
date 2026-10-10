@@ -4,7 +4,7 @@ import re
 from validator import Validator
 
 
-LIB_PATTERN = re.compile('/lib/python(\d(\.\d)?)?/site-packages/')
+LIB_PATTERN = re.compile(r'/lib/python(\d(\.\d)?)?/site-packages/')
 
 
 class PyFlakes(Validator):
