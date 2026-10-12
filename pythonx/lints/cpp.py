@@ -25,4 +25,4 @@ class Cpp(Validator):
 
     def cmd(self, fname):
         return "{} {} -- {}".format(
-            self.binary, fname, self.parse_arguments(self.args_file))
+            self.binary, self.parse_arguments(self.args_file), fname)
